@@ -1,0 +1,9 @@
+[package]
+name = "smart_wallet_following"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.5"
+diesel = { version = "2.2.2" ,features = ["postgres","r2d2"]}
+dotenvy = "0.15.7"
