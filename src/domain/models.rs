@@ -5,7 +5,6 @@
 
 use alloy_primitives::{Address, TxHash};
 use bigdecimal::BigDecimal;
-use bson::serde_helpers::*;
 use chrono::DateTime;
 use chrono::offset::Utc;
 use diesel::pg::Pg;
@@ -40,7 +39,17 @@ pub struct FollowingOrder {
 //   pub published: bool,
 // }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Selectable)]
+#[derive(
+  Queryable,
+  Debug,
+  Serialize,
+  Deserialize,
+  Default,
+  JsonSchema,
+  Selectable,
+  Identifiable,
+  AsChangeset
+)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TgUser {
@@ -56,7 +65,7 @@ pub struct TgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable,Selectable)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable, Selectable)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTgUser {
@@ -67,7 +76,18 @@ pub struct NewTgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable,Selectable)]
+#[derive(
+  Queryable,
+  Debug,
+  Serialize,
+  Deserialize,
+  Default,
+  JsonSchema,
+  Insertable,
+  Selectable,
+  Identifiable,
+  AsChangeset
+)]
 #[diesel(table_name = crate::schema::trading_order)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TradingOrder {
@@ -93,3 +113,31 @@ pub struct TradingOrder {
   pub fee: Option<BigDecimal>,
 }
 
+#[derive(
+  Queryable,
+  Debug,
+  Serialize,
+  Deserialize,
+  Default,
+  JsonSchema,
+  Insertable,
+  Selectable,
+  AsChangeset
+)]
+#[diesel(table_name = crate::schema::trading_order)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewTradingOrder {
+  pub sell_or_buy: String,
+  pub target_token: String,
+  pub from_token: String,
+  pub trading_uer: i64,
+  pub boost_mode: bool,
+  pub mev_protected: bool,
+  pub priority_fee: Option<BigDecimal>,
+
+  pub target_amount: Option<BigDecimal>,
+  pub from_token_amount: Option<BigDecimal>,
+  pub order_type: Option<String>,
+  pub pending_target_price: Option<BigDecimal>,
+  pub expire_at: Option<DateTime<Utc>>,
+}

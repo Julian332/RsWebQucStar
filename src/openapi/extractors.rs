@@ -1,10 +1,8 @@
 use aide::operation::OperationIo;
 use axum::response::IntoResponse;
-use axum_jsonschema::JsonSchemaRejection;
 use axum_macros::FromRequest;
 use schemars::JsonSchema;
 use serde::Serialize;
-use serde_json::json;
 
 use crate::openapi::errors::AppError;
 

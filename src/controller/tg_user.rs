@@ -1,29 +1,29 @@
-#![recursion_limit = "256"]
 use aide::axum::ApiRouter;
-use aide::axum::routing::{get_with, post_with};
+use aide::axum::routing::{get_with, post_with, put_with};
 use axum::extract::{Path, State};
 use axum::response::Json;
 use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
-use diesel::associations::HasTable;
 use diesel::r2d2::{ConnectionManager, Pool};
 
+use crate::controller::{PageParam, PageRes};
 use crate::domain::models::{NewTgUser, TgUser};
-use crate::openapi::resp_docs_with_exam;
+use crate::openapi::default_resp_docs_with_exam;
 use crate::schema::tg_user::dsl::tg_user;
 
 pub(crate) fn tg_user_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
   ApiRouter::new()
     .api_route(
       "/create_tg_user",
-      post_with(create_tg_user, resp_docs_with_exam::<TgUser>),
+      post_with(create_tg_user, default_resp_docs_with_exam::<TgUser>),
       // .get_with(list_todos, empty_resp_docs),
     )
     .api_route(
       "/get_by_id/:id",
-      get_with(get_by_id, resp_docs_with_exam::<TgUser>),
+      get_with(get_by_id, default_resp_docs_with_exam::<TgUser>),
       // .delete_with(delete_todo, empty_resp_docs),
     )
-    // .api_route("/:id", put_with(complete_todo, empty_resp_docs))
+    .api_route("/update_by_id/:id", put_with(update_by_id, default_resp_docs_with_exam::<TgUser>))
+    .api_route("/page", post_with(page, default_resp_docs_with_exam::<PageRes<TgUser>>))
     .with_state(conn_pool)
 }
 
@@ -43,3 +43,21 @@ async fn get_by_id(
   Ok(Json(result))
 }
 
+async fn update_by_id(
+  State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+  Path(id_param): Path<i64>,
+  Json(user): Json<TgUser>) -> Result<Json<bool>, String> {
+  let mut connection = pool.get().unwrap();
+  let result = diesel::update(tg_user.find(id_param)).set(&user).execute(&mut connection).unwrap();
+  Ok(Json(result == 1))
+}
+
+async fn page(
+  State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+  Json(page): Json<PageParam<TgUser>>) -> Result<Json<PageRes<TgUser>>, String> {
+  let mut connection = pool.get().unwrap();
+  let off_lim = page.get_offset_limit();
+  let res = tg_user.limit(off_lim.1).offset(off_lim.0).select(TgUser::as_select()).load(&mut connection).expect("Error loading page");
+  let page_res = PageRes::from_param_records(page, res);
+  Ok(Json(page_res))
+}
