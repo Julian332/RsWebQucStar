@@ -13,6 +13,7 @@ use chrono::DateTime;
 use chrono::offset::Utc;
 use serde::{Deserialize, Serialize};
 use bson::serde_helpers::*;
+use schemars::JsonSchema;
 
 #[derive(Debug)]
 #[derive(Queryable)]
@@ -25,17 +26,17 @@ pub struct FollowingOrder {
   pub update_time: Option<DateTime<Utc>>,
 }
 
-#[derive(Queryable, Selectable, Insertable, Debug)]
-#[diesel(table_name = crate::schema::posts)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Post {
-  pub id: i32,
-  pub title: String,
-  pub body: String,
-  pub published: bool,
-}
+// #[derive(Queryable, Selectable, Insertable, Debug)]
+// #[diesel(table_name = crate::schema::posts)]
+// #[diesel(check_for_backend(diesel::pg::Pg))]
+// pub struct Post {
+//   pub id: i32,
+//   pub title: String,
+//   pub body: String,
+//   pub published: bool,
+// }
 
-#[derive(Queryable, Debug, Serialize, Deserialize)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema,Selectable)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TgUser {
@@ -44,11 +45,22 @@ pub struct TgUser {
   // #[serde(with = "chrono_datetime_as_bson_datetime")]
   pub create_time: DateTime<Utc>,
   pub update_time: Option<DateTime<Utc>>,
-  pub address: Address,
+  pub address: String,
   pub private_key: Option<String>,
   pub fee_staged: Option<BigDecimal>,
   pub fee_received: Option<BigDecimal>,
-  pub parent: Option<Address>,
+  pub parent: Option<String>,
+}
+
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema,Insertable)]
+#[diesel(table_name = crate::schema::tg_user)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewTgUser {
+  // #[serde(with = "chrono_datetime_as_bson_datetime")]
+
+  pub address: String,
+  pub private_key: Option<String>,
+  pub parent: Option<String>,
 }
 
 #[derive(Queryable, Debug, Serialize, Deserialize)]

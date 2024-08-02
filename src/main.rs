@@ -1,34 +1,23 @@
-use diesel::prelude::*;
+mod openapi;
+mod domain;
+mod controller;
+pub mod schema;
 
 use diesel::pg::PgConnection;
-use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
-use std::io::{Read, stdin};
 use std::sync::Arc;
 use aide::axum::ApiRouter;
 use aide::openapi::{OpenApi, Tag};
 use aide::transform::TransformOpenApi;
-use alloy_primitives::Address;
 use diesel::r2d2::{ConnectionManager, Pool};
-use crate::models::{Post, TgUser};
-
-mod following_order;
-mod tg_user;
-mod trading_order;
-mod schema;
-mod models;
-mod errors;
-mod extractors;
-mod docs;
-mod state;
-
-use axum::{routing::{get, post}, http::StatusCode, Json, Router, Extension};
+use domain::models::TgUser;
+use axum::{Extension, http::StatusCode, Json};
 use axum::http::Uri;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::docs::docs_routes;
-use crate::errors::AppError;
+use openapi::docs::docs_routes;
+use openapi::errors::AppError;
 
 #[tokio::main]
 async fn main() {
@@ -45,7 +34,7 @@ async fn main() {
 
 
   let app = ApiRouter::new()
-    // .nest_api_service("/tg_user", tg_user_routes(connection_pool.clone()))
+    .nest_api_service("/tg_users",controller::tg_user::tg_user_routes(connection_pool.clone()))
     // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
     .nest_api_service("/docs", docs_routes())
 
@@ -107,7 +96,7 @@ async fn create_user(
     deleted: false,
     create_time: Default::default(),
     update_time: None,
-    address: Address::default(),
+    address: String::default(),
     private_key: None,
     fee_staged: None,
     fee_received: None,
@@ -119,63 +108,6 @@ async fn create_user(
   (StatusCode::CREATED, Json(user))
 }
 
-// the input to our `create_user` handler
-// #[derive(Deserialize)]
-// struct CreateUser {
-//   username: String,
-// }
-// 
-// // the output to our `create_user` handler
-// #[derive(Serialize)]
-// struct User {
-//   id: u64,
-//   username: String,
-// }
-// fn main2() {
-//   let connection = &mut establish_connection();
-// 
-//   let mut title2 = String::new();
-//   let mut body2 = String::new();
-// 
-//   println!("What would you like your title to be?");
-//   stdin().read_line(&mut title2).unwrap();
-//   let title2 = title2.trim_end(); // Remove the trailing newline
-// 
-//   println!(
-//     "\nOk! Let's write {} (Press {} when finished)\n",
-//     title2, EOF
-//   );
-//   stdin().read_to_string(&mut body2).unwrap();
-// 
-//   let post = create_post(connection, title2, &body2);
-//   println!("\nSaved draft {} with id {}", title2, post.id);
-// 
-// 
-// 
-//   use self::schema::posts::dsl::*;
-// 
-//   let connection = &mut establish_connection();
-//   let results = posts
-//     .filter(published.eq(true))
-//     .limit(5)
-//     .select(Post::as_select())
-//     .load(connection)
-//     .expect("Error loading posts");
-// 
-//   println!("Displaying {} posts", results.len());
-//   for post in results {
-//     println!("{}", post.title);
-//     println!("-----------\n");
-//     println!("{}", post.body);
-//   }
-// }
-// pub fn establish_connection() -> PgConnection {
-//   dotenv().ok();
-// 
-//   let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-//   PgConnection::establish(&database_url)
-//     .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
-// }
 
 pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
   dotenv().ok();
@@ -191,23 +123,5 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
     .expect("Could not build connection pool")
 }
 
-// use self::models::{NewPost};
 
-// pub fn create_post(conn: &mut PgConnection, title: &str, body: &str) -> Post {
-//   use crate::schema::posts;
-// 
-//   let new_post = NewPost { title, body };
-// 
-//   diesel::insert_into(posts::table)
-//     .values(&new_post)
-//     .returning(Post::as_returning())
-//     .get_result(conn)
-//     .expect("Error saving new post")
-// }
-
-// #[cfg(not(windows))]
-// const EOF: &str = "CTRL+D";
-// 
-// #[cfg(windows)]
-// const EOF: &str = "CTRL+Z";
 

@@ -2,12 +2,13 @@ use aide::operation::OperationIo;
 use axum::response::IntoResponse;
 use axum_jsonschema::JsonSchemaRejection;
 use axum_macros::FromRequest;
+use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::json;
 
-use crate::errors::AppError;
+use crate::openapi::errors::AppError;
 
-#[derive(FromRequest, OperationIo)]
+#[derive(FromRequest, OperationIo,JsonSchema)]
 #[from_request(via(axum_jsonschema::Json), rejection(AppError))]
 #[aide(
     input_with = "axum_jsonschema::Json<T>",
