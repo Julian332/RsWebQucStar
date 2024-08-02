@@ -9,8 +9,6 @@ diesel::table! {
     }
 }
 
-
-
 diesel::table! {
     tg_user (id) {
         id -> Int8,
@@ -43,10 +41,10 @@ diesel::table! {
         tx_receipt -> Nullable<Jsonb>,
         target_amount -> Nullable<Numeric>,
         from_token_amount -> Nullable<Numeric>,
-        order_type -> Nullable<Varchar>,
         pending_target_price -> Nullable<Numeric>,
         expire_at -> Nullable<Timestamptz>,
         fee -> Nullable<Numeric>,
+        order_type -> Varchar,
     }
 }
 

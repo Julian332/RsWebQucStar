@@ -107,10 +107,10 @@ pub struct TradingOrder {
   pub tx_receipt: Option<serde_json::Value>,
   pub target_amount: Option<BigDecimal>,
   pub from_token_amount: Option<BigDecimal>,
-  pub order_type: Option<String>,
   pub pending_target_price: Option<BigDecimal>,
   pub expire_at: Option<DateTime<Utc>>,
   pub fee: Option<BigDecimal>,
+  pub order_type: String,
 }
 
 #[derive(
@@ -137,7 +137,7 @@ pub struct NewTradingOrder {
 
   pub target_amount: Option<BigDecimal>,
   pub from_token_amount: Option<BigDecimal>,
-  pub order_type: Option<String>,
   pub pending_target_price: Option<BigDecimal>,
   pub expire_at: Option<DateTime<Utc>>,
+  pub order_type: String,
 }

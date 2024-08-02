@@ -15,8 +15,8 @@ use crate::schema::trading_order::table;
 pub(crate) fn trading_order_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
   ApiRouter::new()
     .api_route(
-      "/trading_order",
-      post_with(create_trading_order, create_trading_order_doc::<TradingOrder>),
+      "/create_trading_order",
+      post_with(create_trading_order, create_trading_order_doc),
     )
     .api_route(
       "/get_by_id/:id",
@@ -79,10 +79,9 @@ pub fn create_trading_order_doc(op: TransformOperation) -> TransformOperation {
         priority_fee: None,
         target_amount: None,
         from_token_amount: None,
-        //todo
-        order_type: None,
         pending_target_price: None,
         expire_at: None,
+        order_type: "trading|pending|following".to_string(),
       })
     })
 }
