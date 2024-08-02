@@ -9,14 +9,7 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    posts (id) {
-        id -> Int4,
-        title -> Varchar,
-        body -> Text,
-        published -> Bool,
-    }
-}
+
 
 diesel::table! {
     tg_user (id) {
@@ -59,7 +52,6 @@ diesel::table! {
 
 diesel::allow_tables_to_appear_in_same_query!(
     following_order,
-    posts,
     tg_user,
     trading_order,
 );

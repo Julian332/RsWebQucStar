@@ -4,16 +4,20 @@
 #![allow(clippy::all)]
 
 use alloy_primitives::{Address, TxHash};
-use crate::schema::posts::dsl::posts;
-use diesel::prelude::*;
-
-use diesel::Queryable;
 use bigdecimal::BigDecimal;
+use bson::serde_helpers::*;
 use chrono::DateTime;
 use chrono::offset::Utc;
-use serde::{Deserialize, Serialize};
-use bson::serde_helpers::*;
+use diesel::pg::Pg;
+use diesel::prelude::*;
+use diesel::Queryable;
+use diesel::serialize::ToSql;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+#[derive(Queryable, Debug, Serialize, Deserialize, Default)]
+struct EthAddress(Address);
+
 
 #[derive(Debug)]
 #[derive(Queryable)]
@@ -36,7 +40,7 @@ pub struct FollowingOrder {
 //   pub published: bool,
 // }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema,Selectable)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Selectable)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TgUser {
@@ -52,7 +56,7 @@ pub struct TgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema,Insertable)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable,Selectable)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTgUser {
@@ -63,7 +67,7 @@ pub struct NewTgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable,Selectable)]
 #[diesel(table_name = crate::schema::trading_order)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TradingOrder {
@@ -72,14 +76,14 @@ pub struct TradingOrder {
   pub create_time: DateTime<Utc>,
   pub update_time: Option<DateTime<Utc>>,
   pub sell_or_buy: String,
-  pub target_token: Address,
-  pub from_token: Address,
+  pub target_token: String,
+  pub from_token: String,
   pub trading_uer: i64,
   pub boost_mode: bool,
   pub mev_protected: bool,
   pub priority_fee: Option<BigDecimal>,
   pub is_succeed: Option<bool>,
-  pub tx_hash: Option<TxHash>,
+  pub tx_hash: Option<String>,
   pub tx_receipt: Option<serde_json::Value>,
   pub target_amount: Option<BigDecimal>,
   pub from_token_amount: Option<BigDecimal>,

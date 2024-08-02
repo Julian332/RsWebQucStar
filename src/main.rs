@@ -1,40 +1,40 @@
+use std::env;
+use std::sync::Arc;
+
+use aide::axum::ApiRouter;
+use aide::openapi::{OpenApi, Tag};
+use aide::transform::TransformOpenApi;
+use axum::{Extension, http::StatusCode, Json};
+use axum::http::Uri;
+use diesel::pg::PgConnection;
+use diesel::r2d2::{ConnectionManager, Pool};
+use dotenvy::dotenv;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use openapi::docs::docs_routes;
+use openapi::errors::AppError;
+
 mod openapi;
 mod domain;
 mod controller;
 pub mod schema;
 
-use diesel::pg::PgConnection;
-use dotenvy::dotenv;
-use std::env;
-use std::sync::Arc;
-use aide::axum::ApiRouter;
-use aide::openapi::{OpenApi, Tag};
-use aide::transform::TransformOpenApi;
-use diesel::r2d2::{ConnectionManager, Pool};
-use domain::models::TgUser;
-use axum::{Extension, http::StatusCode, Json};
-use axum::http::Uri;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use openapi::docs::docs_routes;
-use openapi::errors::AppError;
-
 #[tokio::main]
 async fn main() {
-  // initialize tracing
   tracing_subscriber::fmt::init();
   let connection_pool = get_connection_pool();
 
   aide::gen::on_error(|error| {
     println!("{error}");
   });
-
   aide::gen::extract_schemas(true);
   let mut api = OpenApi::default();
 
 
   let app = ApiRouter::new()
     .nest_api_service("/tg_users",controller::tg_user::tg_user_routes(connection_pool.clone()))
+    .nest_api_service("/trading_order",controller::trading_order::trading_order_routes(connection_pool.clone()))
     // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
     .nest_api_service("/docs", docs_routes())
 
@@ -85,28 +85,28 @@ async fn fallback(uri: Uri) -> (StatusCode, String) {
 }
 
 
-async fn create_user(
-  // this argument tells axum to parse the request body
-  // as JSON into a `CreateUser` type
-  Json(payload): Json<TgUser>,
-) -> (StatusCode, Json<TgUser>) {
-  // insert your application logic here
-  let user = TgUser {
-    id: 1337,
-    deleted: false,
-    create_time: Default::default(),
-    update_time: None,
-    address: String::default(),
-    private_key: None,
-    fee_staged: None,
-    fee_received: None,
-    parent: None,
-  };
-
-  // this will be converted into a JSON response
-  // with a status code of `201 Created`
-  (StatusCode::CREATED, Json(user))
-}
+// async fn create_user(
+//   // this argument tells axum to parse the request body
+//   // as JSON into a `CreateUser` type
+//   Json(payload): Json<TgUser>,
+// ) -> (StatusCode, Json<TgUser>) {
+//   // insert your application logic here
+//   let user = TgUser {
+//     id: 1337,
+//     deleted: false,
+//     create_time: Default::default(),
+//     update_time: None,
+//     address: String::default(),
+//     private_key: None,
+//     fee_staged: None,
+//     fee_received: None,
+//     parent: None,
+//   };
+// 
+//   // this will be converted into a JSON response
+//   // with a status code of `201 Created`
+//   (StatusCode::CREATED, Json(user))
+// }
 
 
 pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
