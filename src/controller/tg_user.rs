@@ -1,13 +1,15 @@
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get_with, post_with, put_with};
+use alloy::primitives::Address;
 use axum::extract::{Path, State};
 use axum::response::Json;
-use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
-use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 
 use crate::controller::{PageParam, PageRes};
 use crate::domain::models::{NewTgUser, TgUser};
 use crate::openapi::default_resp_docs_with_exam;
+use crate::schema::tg_user::address;
 use crate::schema::tg_user::dsl::tg_user;
 
 pub(crate) fn tg_user_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
@@ -19,7 +21,7 @@ pub(crate) fn tg_user_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -
     )
     .api_route(
       "/get_by_id/:id",
-      get_with(get_by_id, default_resp_docs_with_exam::<TgUser>),
+      get_with(get_user_by_id, default_resp_docs_with_exam::<TgUser>),
       // .delete_with(delete_todo, empty_resp_docs),
     )
     .api_route("/update_by_id/:id", put_with(update_by_id, default_resp_docs_with_exam::<TgUser>))
@@ -35,12 +37,25 @@ async fn create_tg_user(State(pool): State<Pool<ConnectionManager<PgConnection>>
 
   Ok(Json::from(result))
 }
-async fn get_by_id(
+pub async fn get_user_by_id(
   State(pool): State<Pool<ConnectionManager<PgConnection>>>,
   Path(id_param): Path<i64>) -> Result<Json<Option<TgUser>>, String> {
   let mut connection = pool.get().unwrap();
   let result = tg_user.find(id_param).select(TgUser::as_select()).first(&mut connection).optional().unwrap();
   Ok(Json(result))
+}
+
+pub async fn get_user_by_addr(
+  State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+  Path(addr): Path<Address>) -> Result<Json<Option<TgUser>>, String> {
+  let mut connection = pool.get().unwrap();
+  let result = user_by_addr(addr, &mut connection);
+  // let result = tg_user.find(id_param).select(TgUser::as_select()).first(&mut connection).optional().unwrap();
+  Ok(Json(result))
+}
+
+pub fn user_by_addr(addr: Address, connection: &mut PooledConnection<ConnectionManager<PgConnection>>) -> Option<TgUser> {
+  tg_user.filter(address.eq(addr.to_string())).select(TgUser::as_select()).first(connection).optional().unwrap()
 }
 
 async fn update_by_id(

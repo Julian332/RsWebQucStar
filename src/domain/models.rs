@@ -3,7 +3,6 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-use alloy_primitives::{Address, TxHash};
 use bigdecimal::BigDecimal;
 use chrono::DateTime;
 use chrono::offset::Utc;
@@ -14,8 +13,8 @@ use diesel::serialize::ToSql;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default)]
-struct EthAddress(Address);
+// #[derive(Queryable, Debug, Serialize, Deserialize, Default)]
+// struct EthAddress(Address);
 
 
 #[derive(Debug)]
@@ -111,6 +110,10 @@ pub struct TradingOrder {
   pub expire_at: Option<DateTime<Utc>>,
   pub fee: Option<BigDecimal>,
   pub order_type: String,
+  pub slippage: Option<BigDecimal>,
+  pub user_addr: String,
+
+
 }
 
 #[derive(
@@ -122,7 +125,8 @@ pub struct TradingOrder {
   JsonSchema,
   Insertable,
   Selectable,
-  AsChangeset
+  AsChangeset,
+  Clone
 )]
 #[diesel(table_name = crate::schema::trading_order)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -140,4 +144,9 @@ pub struct NewTradingOrder {
   pub pending_target_price: Option<BigDecimal>,
   pub expire_at: Option<DateTime<Utc>>,
   pub order_type: String,
+  pub slippage: Option<BigDecimal>,
+  pub user_addr: String,
+
 }
+
+

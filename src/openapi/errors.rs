@@ -1,3 +1,6 @@
+use std::fmt::{Display, Formatter};
+
+use alloy::primitives::private::derive_more::Error;
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_jsonschema::JsonSchemaRejection;
 use schemars::JsonSchema;
@@ -6,7 +9,7 @@ use serde_json::{json, Value};
 use uuid::Uuid;
 
 /// A default error response for most API errors.
-#[derive(Debug, Serialize, JsonSchema)]
+#[derive(Debug, Serialize, JsonSchema,Error)]
 pub struct AppError {
     /// An error message.
     pub error: String,
@@ -19,6 +22,13 @@ pub struct AppError {
     pub error_details: Option<Value>,
 }
 
+impl Display for AppError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(+error:{}, +error_id:{})", self.error, self.error_id)  
+    }
+}
+
+
 impl AppError {
     pub fn new(error: &str) -> Self {
         Self {
@@ -27,6 +37,15 @@ impl AppError {
             status: StatusCode::BAD_REQUEST,
             error_details: None,
         }
+    }
+
+    pub fn new_box(error: &str) -> Box<Self> {
+        Box::new(Self {
+            error: error.to_string(),
+            error_id: Uuid::new_v4(),
+            status: StatusCode::BAD_REQUEST,
+            error_details: None,
+        })
     }
 
     pub fn with_status(mut self, status: StatusCode) -> Self {

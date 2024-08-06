@@ -45,6 +45,8 @@ diesel::table! {
         expire_at -> Nullable<Timestamptz>,
         fee -> Nullable<Numeric>,
         order_type -> Varchar,
+        slippage -> Nullable<Numeric>,
+        user_addr -> Varchar,
     }
 }
 
