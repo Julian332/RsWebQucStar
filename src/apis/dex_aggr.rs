@@ -46,7 +46,7 @@ pub async fn dex_aggr(chain_id: isize, amount: BigDecimal, to_token_address: Add
   let mut mac = HmacSha256::new_from_slice(hex::decode(ok_access_secret_key)?.as_slice())
     .expect("HMAC can take key of any size");
   let message = format!("{}{}{}", now, "GET", path_and_params);
-  let message = "2024-08-06T06:31:17ZGET/api/v5/dex/aggregator/quote?chainId=42161&amount=1000000000000&toTokenAddress=0xff970a61a04b1ca14834a43f5de4533ebddb5cc8&fromTokenAddress=0x82aF49447D8a07e3bd95BD0d56f35241523fBab1".to_string();
+  // let message = "2024-08-06T06:31:17ZGET/api/v5/dex/aggregator/quote?chainId=42161&amount=1000000000000&toTokenAddress=0xff970a61a04b1ca14834a43f5de4533ebddb5cc8&fromTokenAddress=0x82aF49447D8a07e3bd95BD0d56f35241523fBab1".to_string();
   mac.update(message.as_bytes());
 
   let result = &mac.finalize().into_bytes()[..];

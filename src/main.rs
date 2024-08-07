@@ -6,7 +6,6 @@ use aide::openapi::OpenApi;
 use axum::Extension;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
-use dotenvy::dotenv;
 use serde::{Deserialize, Serialize};
 
 use openapi::docs::docs_routes;
@@ -22,8 +21,10 @@ pub mod contract;
 
 #[tokio::main]
 async fn main() {
+  set_env();
   tracing_subscriber::fmt::init();
-  dotenv().ok();
+  // dotenvy::dotenv().ok();
+
   let connection_pool = get_connection_pool();
 
   aide::gen::on_error(|error| {
@@ -34,8 +35,8 @@ async fn main() {
 
 
   let app = ApiRouter::new()
-    .nest_api_service("/tg_users",controller::tg_user::tg_user_routes(connection_pool.clone()))
-    .nest_api_service("/trading_order",controller::trading_order::trading_order_routes(connection_pool.clone()))
+    .nest_api_service("/tg_users", controller::tg_user::tg_user_routes(connection_pool.clone()))
+    .nest_api_service("/trading_order", controller::trading_order::trading_order_routes(connection_pool.clone()))
     // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
     .nest_api_service("/docs", docs_routes())
 
@@ -49,10 +50,15 @@ async fn main() {
   axum::serve(listener, app).await.unwrap();
 }
 
-
+fn set_env() {
+  match get_build_profile_name().as_str() {
+    "release" => { dotenvy::from_filename(".env_prod").ok(); }
+    "dev" | "test" | "debug" | "bench" => { dotenvy::from_filename(".env_dev").ok(); }
+    _ => { dotenvy::from_filename(".env_dev").ok(); }
+  }
+}
 
 pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
-
   let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
   let manager = ConnectionManager::<PgConnection>::new(database_url);
   // Refer to the `r2d2` documentation for more methods to use
@@ -65,4 +71,12 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
 }
 
 
-
+fn get_build_profile_name() -> String {
+  // The profile name is always the 3rd last part of the path (with 1 based indexing).
+  // e.g. /code/core/target/cli/build/my-build-info-9f91ba6f99d7a061/out
+  std::env!("OUT_DIR")
+    .split(std::path::MAIN_SEPARATOR)
+    .nth_back(3)
+    .unwrap_or_else(|| "unknown")
+    .to_string()
+}

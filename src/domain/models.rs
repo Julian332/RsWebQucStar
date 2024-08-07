@@ -139,7 +139,7 @@ pub struct NewTradingOrder {
   pub mev_protected: bool,
   pub priority_fee: Option<BigDecimal>,
 
-  pub target_amount: Option<BigDecimal>,
+  // pub target_amount: Option<BigDecimal>,
   pub from_token_amount: Option<BigDecimal>,
   pub pending_target_price: Option<BigDecimal>,
   pub expire_at: Option<DateTime<Utc>>,

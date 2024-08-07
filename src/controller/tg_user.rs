@@ -1,6 +1,7 @@
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get_with, post_with, put_with};
 use alloy::primitives::Address;
+use alloy::signers::k256::elliptic_curve::generic_array::typenum::private::Trim;
 use axum::extract::{Path, State};
 use axum::response::Json;
 use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
@@ -33,6 +34,10 @@ async fn create_tg_user(State(pool): State<Pool<ConnectionManager<PgConnection>>
   let mut connection = pool.get().unwrap();
   // let string = new_user.address.to_lowercase();
   new_user.address = new_user.address.trim().to_lowercase();
+  // if let Some(private_key) = new_user.private_key {
+  //   new_user.private_key = Some(private_key.trim());
+  // }
+  
   let result = diesel::insert_into(tg_user).values(new_user).returning(TgUser::as_returning()).get_result(&mut connection).expect("Error saving new TgUser");
 
   Ok(Json::from(result))
@@ -55,7 +60,7 @@ pub async fn get_user_by_addr(
 }
 
 pub fn user_by_addr(addr: Address, connection: &mut PooledConnection<ConnectionManager<PgConnection>>) -> Option<TgUser> {
-  tg_user.filter(address.eq(addr.to_string())).select(TgUser::as_select()).first(connection).optional().unwrap()
+  tg_user.filter(address.eq(addr.to_string().to_lowercase())).select(TgUser::as_select()).first(connection).optional().unwrap()
 }
 
 async fn update_by_id(
