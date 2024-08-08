@@ -1,22 +1,30 @@
 use std::env;
 use std::error::Error;
-use std::ops::{Mul, Sub};
+use std::ops::{Div, Mul, Sub};
+use std::str::FromStr;
 
 use aide::axum::ApiRouter;
 use aide::axum::routing::{get_with, post_with, put_with};
 use aide::transform::TransformOperation;
 use alloy::hex;
 use alloy::hex::FromHex;
-use alloy::network::EthereumWallet;
-use alloy::primitives::{Address, TxHash, U256};
+use alloy::network::{Ethereum, EthereumWallet};
+use alloy::primitives::{Address, TxHash, U256, Uint};
+use alloy::providers::{Provider, ProviderBuilder, ReqwestProvider};
+use alloy::providers::fillers::{FillProvider, JoinFill, RecommendedFiller, WalletFiller};
 use alloy::signers::local::PrivateKeySigner;
+use alloy::transports::http::{Client, Http};
+use alloy::transports::http::reqwest::Url;
 use axum::extract::{Path, State};
 use axum::response::Json;
 use bigdecimal::{BigDecimal, One, ToPrimitive};
 use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::query_dsl::InternalJoinDsl;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 
+use crate::contract::{transfer, transfer_with_nonce};
 use crate::contract::uni_router2::get_uni_router2;
+use crate::contract::uni_router2::UNI_ROUTER2::UNI_ROUTER2Instance;
 use crate::controller::{PageParam, PageRes};
 use crate::controller::tg_user::user_by_addr;
 use crate::domain::models::{NewTradingOrder, TradingOrder};
@@ -40,149 +48,111 @@ pub(crate) fn trading_order_routes(conn_pool: Pool<ConnectionManager<PgConnectio
     .with_state(conn_pool)
 }
 
-async fn create_trading_order(State(pool): State<Pool<ConnectionManager<PgConnection>>>, Json(mut new_order): Json<NewTradingOrder>) -> Result<Json<TradingOrder>, String> {
+async fn create_trading_order(State(pool): State<Pool<ConnectionManager<PgConnection>>>, Json(mut new_order): Json<NewTradingOrder>) -> Result<Json<String>, String> {
   let mut connection = pool.get().unwrap();
   new_order.target_token = new_order.target_token.trim().to_lowercase();
   new_order.from_token = new_order.from_token.trim().to_lowercase();
   new_order.order_type = new_order.order_type.trim().to_lowercase();
   match new_order.order_type.as_str() {
-    "trading" => {
-      let result1 = new_order.make_trading(&mut connection).await;
-      println!("{:?}", result1); }
+    "trading" => {}
     "pending" => {}
     "following" => {}
     _ => { unreachable!() }
   }
-  //todo tx fee
+
+  match new_order.make_trading(&mut connection).await {
+    Ok((tx_hash, eth)) => {
+      let result = diesel::insert_into(trading_order).values(new_order).returning(TradingOrder::as_returning()).get_result(&mut connection).expect("Error saving new TradingOrder");
 
 
-  let result = diesel::insert_into(trading_order).values(new_order).returning(TradingOrder::as_returning()).get_result(&mut connection).expect("Error saving new TradingOrder");
-  Ok(Json::from(result))
+      Ok(Json::from(tx_hash.to_string()))
+    }
+    Err(e) => {
+      println!("{}", e);
+      tracing::error!("error: {}",e);
+      Err("internal error".to_string())
+    }
+  }
 }
 
 
 impl NewTradingOrder {
-  async fn make_trading(&self, conn: &mut PooledConnection<ConnectionManager<PgConnection>>) -> Result<TxHash, Box<dyn Error>> {
+  async fn make_trading(&self, conn: &mut PooledConnection<ConnectionManager<PgConnection>>) -> Result<(TxHash, U256), Box<dyn Error>> {
     let user_address = Address::from_hex(self.user_addr.clone())?;
     let user = user_by_addr(user_address, conn).unwrap();
     let pk = hex::decode(user.private_key.unwrap())?;
-    // let chain_id = isize::from_str(env::var("CHAIN_ID")?.as_str())?;
     let wallet = EthereumWallet::from(PrivateKeySigner::from_slice(&pk)?);
-    let uni_router2 = get_uni_router2(wallet).await?;
+    let provider = ProviderBuilder::new()
+      .with_recommended_fillers()
+      .wallet(wallet)
+      .on_http(Url::from_str(env::var("ETH_RPC")?.as_str()).unwrap());
+    let uni_router2 = get_uni_router2(provider.clone()).await?;
+    let count = provider.get_transaction_count(user_address).await?;
 
-    match self.sell_or_buy.clone().as_str() {
+    match self.sell_or_buy.clone().to_lowercase().as_str() {
       "buy" => {
-        
+        let amount_in = U256::from(self.from_token_amount.clone().to_u128().unwrap());
+        let path: Vec<Address> = [env::var("WETH_ROUTER2_ADDR")?, self.target_token.clone()]
+          .iter().map(|x| { Address::from_hex(x).unwrap() }).collect();
+
+        let target_amount = self.get_amount_out(&uni_router2, amount_in, &path).await?;
+        let deadline = chrono::Utc::now().timestamp() + 180;
+
+        let builder = uni_router2.swapExactETHForTokensSupportingFeeOnTransferTokens(
+          target_amount,
+          path,
+          user_address,
+          U256::from(deadline))
+          .value(U256::from(amount_in));
+        let swap_res = builder
+          .send().await?;
+
+        let fee_tx_hash = transfer_with_nonce(
+          provider.clone(),
+          Address::from_str(env::var("PROJECT_SIDE_ADDR")?.as_str()).unwrap(),
+          amount_in.div(U256::from(100)),
+          count + 1).await?;
+        return Ok((*swap_res.tx_hash(), amount_in));
       }
       "sell" => {
-
-        // return Ok(swap_res.tx_hash().clone());
-      }
-      _ => { unreachable!() }
-    }
-    
-    
-    match (&self.from_token_amount, &self.target_amount) {
-      (Some(amount_in), None) => {
-
-        // if self.from_token.eq_ignore_ascii_case("eth") { env::var("WETH_ROUTER2_ADDR")? } else { self.from_token.clone() }
-
-        // let amount_in = self.from_token_amount.clone().unwrap();
-        let mut tx_value = 0;
-        let path: Vec<Address> = [if self.from_token.eq_ignore_ascii_case("eth") {
-          tx_value = amount_in.to_u128().unwrap();
-          env::var("WETH_ROUTER2_ADDR")?
-        } else { self.from_token.clone() }
-          , self.target_token.clone()]
+        let amount_in = U256::from(self.from_token_amount.clone().to_u128().unwrap());
+        let path: Vec<Address> = [self.from_token.clone(), env::var("WETH_ROUTER2_ADDR")?]
           .iter().map(|x| { Address::from_hex(x).unwrap() }).collect();
 
-        let amounts_out_return = uni_router2.getAmountsOut(U256::from(amount_in.to_u128().unwrap()), path.clone()).call().await?;
-        let mut target_amount = *amounts_out_return.amounts.get(1).unwrap();
-        if let Some(slippage) = self.slippage.clone() {
-          let decimal = BigDecimal::from(target_amount.to::<u128>()).mul(BigDecimal::one().sub(slippage));
-          target_amount = U256::from(decimal.to_u128().unwrap());
-        }
+        let target_amount = self.get_amount_out(&uni_router2, amount_in, &path).await?;
+
         let deadline = chrono::Utc::now().timestamp() + 180;
 
-        let builder1;
-        let builder2;
-        let swap_res =
-          if self.from_token.eq_ignore_ascii_case("eth") {
-            builder1 = uni_router2.swapExactETHForTokensSupportingFeeOnTransferTokens(
-              target_amount,
-              path,
-              user_address,
-              U256::from(deadline))
-              .value(U256::from(tx_value));
-            builder1
-              .send().await?
-          } else {
-            builder2 = uni_router2.swapExactTokensForTokens(
-              U256::from(amount_in.to_u128().unwrap()),
-              target_amount,
-              path,
-              user_address,
-              U256::from(deadline));
-            builder2
-              .send().await?
-          };
-        return Ok(*swap_res.tx_hash());
-        //
-        // let handle = tokio::spawn(move || {});
+        let call_builder = uni_router2.swapExactTokensForETHSupportingFeeOnTransferTokens(
+          amount_in,
+          target_amount,
+          path,
+          user_address,
+          U256::from(deadline));
+
+        let swap_res = call_builder
+          .send().await?;
+
+        let fee_tx_hash = transfer_with_nonce(
+          provider.clone(),
+          Address::from_str(env::var("PROJECT_SIDE_ADDR")?.as_str()).unwrap(),
+          target_amount.div(U256::from(100)),
+          count + 1).await?;
+
+        return Ok((*swap_res.tx_hash(), target_amount));
       }
-      (None, Some(amount_out)) => {
-
-        // if self.from_token.eq_ignore_ascii_case("eth") { env::var("WETH_ROUTER2_ADDR")? } else { self.from_token.clone() }
-
-        // let amount_in = self.from_token_amount.clone().unwrap();
-        let mut tx_value = 0;
-        let path: Vec<Address> = [if self.from_token.eq_ignore_ascii_case("eth") {
-          env::var("WETH_ROUTER2_ADDR")?
-        } else { self.from_token.clone() }
-          , self.target_token.clone()]
-          .iter().map(|x| { Address::from_hex(x).unwrap() }).collect();
-        
-        let amounts_out_return = uni_router2.getAmountsIn(U256::from(amount_out.to_u128().unwrap()), path.clone()).call().await?;
-        let mut target_amount = *amounts_out_return.amounts.get(1).unwrap();
-        
-        if let Some(slippage) = self.slippage.clone() {
-          let decimal = BigDecimal::from(target_amount.to::<u128>()).mul(BigDecimal::one().sub(slippage));
-          target_amount = U256::from(decimal.to_u128().unwrap());
-        }
-        let deadline = chrono::Utc::now().timestamp() + 180;
-
-        let builder1;
-        let builder2;
-        let swap_res =
-          if self.from_token.eq_ignore_ascii_case("eth") {
-            builder1 = uni_router2.swapETHForExactTokens(
-              target_amount,
-              path,
-              user_address,
-              U256::from(deadline))
-              .value(U256::from(tx_value));
-            builder1
-              .send().await?
-          } else {
-            builder2 = uni_router2.swapExactTokensForTokens(
-              U256::from(amount_in.to_u128().unwrap()),
-              target_amount,
-              path,
-              user_address,
-              U256::from(deadline));
-            builder2
-              .send().await?
-          };
-        return Ok(*swap_res.tx_hash());
-        //
-        // let handle = tokio::spawn(move || {});
-      }
-      _ => { panic!("wrong amount_in amount_out") }
+      _ => { panic!("only sell or buy") }
     }
+  }
 
-
-
-    return Err(AppError::new_box("un"));
+  async fn get_amount_out(&self, uni_router2: &UNI_ROUTER2Instance<Http<Client>, FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum>>, amount_in: Uint<256, 4>, path: &Vec<Address>) -> Result<U256, Box<dyn Error>> {
+    let amounts_out_return = uni_router2.getAmountsOut(amount_in, path.clone()).call().await?;
+    let mut target_amount = *amounts_out_return.amounts.get(1).unwrap();
+    if let Some(slippage) = self.slippage.clone() {
+      let decimal = BigDecimal::from(target_amount.to::<u128>()).mul(BigDecimal::one().sub(slippage));
+      target_amount = U256::from(decimal.to_u128().unwrap());
+    }
+    Ok(target_amount)
   }
 }
 async fn get_by_id(
@@ -226,8 +196,8 @@ pub fn create_trading_order_doc(op: TransformOperation) -> TransformOperation {
         boost_mode: false,
         mev_protected: false,
         priority_fee: None,
-        target_amount: None,
-        from_token_amount: None,
+        // target_amount: None,
+        from_token_amount: BigDecimal::from(100000),
         pending_target_price: None,
         expire_at: None,
         order_type: "trading|pending|following".to_string(),

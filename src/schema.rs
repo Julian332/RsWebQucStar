@@ -40,7 +40,7 @@ diesel::table! {
         tx_hash -> Nullable<Varchar>,
         tx_receipt -> Nullable<Jsonb>,
         target_amount -> Nullable<Numeric>,
-        from_token_amount -> Nullable<Numeric>,
+        from_token_amount -> Numeric,
         pending_target_price -> Nullable<Numeric>,
         expire_at -> Nullable<Timestamptz>,
         fee -> Nullable<Numeric>,
