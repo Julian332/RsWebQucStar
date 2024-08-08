@@ -98,6 +98,7 @@ impl NewTradingOrder {
         let target_amount = self.get_amount_out(&uni_router2, amount_in, &path).await?;
         let deadline = chrono::Utc::now().timestamp() + 180;
 
+        //todo  gas fee
         let builder = uni_router2.swapExactETHForTokensSupportingFeeOnTransferTokens(
           target_amount,
           path,
