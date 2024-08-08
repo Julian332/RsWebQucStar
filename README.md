@@ -1,6 +1,3 @@
-# Todo API
-
-A very simple Todo server with documentation.
-
-The purpose is to showcase the documentation workflow of Aide rather
-than a correct implementation.
+# prerequisite
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+sudo apt install build-essential

@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-cargo run --dev --package smart_wallet_following --bin smart_wallet_following
+cargo run  --package smart_wallet_following --bin smart_wallet_following
