@@ -3,30 +3,30 @@ use std::error::Error;
 use std::ops::{Div, Mul, Sub};
 use std::str::FromStr;
 
-use aide::axum::ApiRouter;
 use aide::axum::routing::{get_with, post_with, put_with};
+use aide::axum::ApiRouter;
 use aide::transform::TransformOperation;
 use alloy::hex;
 use alloy::hex::FromHex;
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{Address, TxHash, U256, Uint};
-use alloy::providers::{Provider, ProviderBuilder, ReqwestProvider};
+use alloy::primitives::{Address, TxHash, Uint, U256};
 use alloy::providers::fillers::{FillProvider, JoinFill, RecommendedFiller, WalletFiller};
+use alloy::providers::{Provider, ProviderBuilder, ReqwestProvider};
 use alloy::signers::local::PrivateKeySigner;
-use alloy::transports::http::{Client, Http};
 use alloy::transports::http::reqwest::Url;
+use alloy::transports::http::{Client, Http};
 use axum::extract::{Path, State};
 use axum::response::Json;
 use bigdecimal::{BigDecimal, One, ToPrimitive};
-use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 use diesel::query_dsl::InternalJoinDsl;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 
-use crate::contract::{transfer, transfer_with_nonce};
 use crate::contract::uni_router2::get_uni_router2;
 use crate::contract::uni_router2::UNI_ROUTER2::UNI_ROUTER2Instance;
-use crate::controller::{PageParam, PageRes};
+use crate::contract::{transfer, transfer_with_nonce};
 use crate::controller::tg_user::user_by_addr;
+use crate::controller::{PageParam, PageRes};
 use crate::domain::models::{NewTradingOrder, TradingOrder};
 use crate::openapi::default_resp_docs_with_exam;
 use crate::openapi::errors::AppError;
@@ -188,22 +188,40 @@ async fn page(
 
 pub fn create_trading_order_doc(op: TransformOperation) -> TransformOperation {
   op.description("default_docs")
+    // .parameter::< crate::openapi::extractors::Json<NewTradingOrder>, _>("a",|res| {
+    //   res.example(NewTradingOrder {
+    //     sell_or_buy: "sell|buy".to_string(),
+    //     target_token: "erc20 address ".to_string(),
+    //     from_token: "erc20 address | eth".to_string(),
+    //     // trading_uer: 0,
+    //     boost_mode: false,
+    //     mev_protected: false,
+    //     priority_fee: None,
+    //     // target_amount: None,
+    //     from_token_amount: BigDecimal::from(100000),
+    //     // pending_target_price: None,
+    //     // expire_at: None,
+    //     order_type: "trading|pending|following".to_string(),
+    //     slippage: None,
+    //     user_addr: "".to_string(),
+    //   })
+    // })
     .response_with::<200, crate::openapi::extractors::Json<NewTradingOrder>, _>(|res| {
-      res.example(NewTradingOrder {
-        sell_or_buy: "sell|buy".to_string(),
-        target_token: "erc20 address ".to_string(),
-        from_token: "erc20 address | eth".to_string(),
-        // trading_uer: 0,
-        boost_mode: false,
-        mev_protected: false,
-        priority_fee: None,
-        // target_amount: None,
-        from_token_amount: BigDecimal::from(100000),
-        // pending_target_price: None,
-        // expire_at: None,
-        order_type: "trading|pending|following".to_string(),
-        slippage: None,
-        user_addr: "".to_string(),
-      })
+    res.example(NewTradingOrder {
+      sell_or_buy: "sell|buy".to_string(),
+      target_token: "erc20 address ".to_string(),
+      from_token: "erc20 address | eth".to_string(),
+      // trading_uer: 0,
+      boost_mode: false,
+      mev_protected: false,
+      priority_fee: None,
+      // target_amount: None,
+      from_token_amount: BigDecimal::from(100000),
+      // pending_target_price: None,
+      // expire_at: None,
+      order_type: "trading|pending|following".to_string(),
+      slippage: None,
+      user_addr: "".to_string(),
     })
+  })
 }
