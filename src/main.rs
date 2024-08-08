@@ -21,8 +21,8 @@ pub mod contract;
 
 #[tokio::main]
 async fn main() {
-  set_env();
   tracing_subscriber::fmt::init();
+  set_env();
   // dotenvy::dotenv().ok();
 
   let connection_pool = get_connection_pool();
@@ -51,10 +51,14 @@ async fn main() {
 }
 
 fn set_env() {
-  match get_build_profile_name().as_str() {
-    "release" => { dotenvy::from_filename(".env_prod").ok(); }
-    "dev" | "test" | "debug" | "bench" => { dotenvy::from_filename(".env_dev").ok(); }
-    _ => { dotenvy::from_filename(".env_dev").ok(); }
+  let profile = get_build_profile_name();
+  tracing::info!("profile :{} is active",profile);
+  match profile.as_str() {
+    "release" => { dotenvy::from_filename("env_prod.env").ok(); }
+    _ => {
+      dotenvy::from_filename("env_dev.env").ok();
+    }
+
   }
 }
 

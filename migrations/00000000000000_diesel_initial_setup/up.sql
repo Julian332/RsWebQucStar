@@ -39,38 +39,14 @@ SET row_security = off;
 -- Name: diesel_manage_updated_at(regclass); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION public.diesel_manage_updated_at(_tbl regclass) RETURNS void
-    LANGUAGE plpgsql
-AS $$
-BEGIN
-    EXECUTE format('CREATE TRIGGER set_updated_at BEFORE UPDATE ON %s
-                    FOR EACH ROW EXECUTE PROCEDURE diesel_set_updated_at()', _tbl);
-END;
-$$;
 
 
-ALTER FUNCTION public.diesel_manage_updated_at(_tbl regclass) OWNER TO postgres;
 
 --
 -- Name: diesel_set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION public.diesel_set_updated_at() RETURNS trigger
-    LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF (
-        NEW IS DISTINCT FROM OLD AND
-        NEW.updated_at IS NOT DISTINCT FROM OLD.updated_at
-        ) THEN
-        NEW.updated_at := current_timestamp;
-    END IF;
-    RETURN NEW;
-END;
-$$;
 
-
-ALTER FUNCTION public.diesel_set_updated_at() OWNER TO postgres;
 
 --
 -- Name: trigger_set_timestamp(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -92,17 +68,7 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- Name: __diesel_schema_migrations; Type: TABLE; Schema: public; Owner: postgres
---
 
-CREATE TABLE public.__diesel_schema_migrations (
-                                                   version character varying(50) NOT NULL,
-                                                   run_on timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
-ALTER TABLE public.__diesel_schema_migrations OWNER TO postgres;
 
 --
 -- Name: following_order; Type: TABLE; Schema: public; Owner: postgres
@@ -308,11 +274,7 @@ ALTER TABLE ONLY public.tg_user ALTER COLUMN id SET DEFAULT nextval('public.tg_u
 ALTER TABLE ONLY public.trading_order ALTER COLUMN id SET DEFAULT nextval('public.trading_order_id_seq'::regclass);
 
 
---
--- Data for Name: __diesel_schema_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-INSERT INTO public.__diesel_schema_migrations VALUES ('00000000000000', '2024-07-31 06:22:54.658175');
 
 
 --
@@ -368,11 +330,6 @@ SELECT pg_catalog.setval('public.trading_order_id_seq', 1, false);
 
 
 --
--- Name: __diesel_schema_migrations __diesel_schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.__diesel_schema_migrations
-    ADD CONSTRAINT __diesel_schema_migrations_pkey PRIMARY KEY (version);
 
 
 --
@@ -432,21 +389,5 @@ CREATE TRIGGER update_time BEFORE UPDATE ON public.trading_order FOR EACH STATEM
 -- PostgreSQL database dump complete
 --
 
-CREATE OR REPLACE FUNCTION diesel_manage_updated_at(_tbl regclass) RETURNS VOID AS $$
-BEGIN
-    EXECUTE format('CREATE TRIGGER set_updated_at BEFORE UPDATE ON %s
-                    FOR EACH ROW EXECUTE PROCEDURE diesel_set_updated_at()', _tbl);
-END;
-$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION diesel_set_updated_at() RETURNS trigger AS $$
-BEGIN
-    IF (
-        NEW IS DISTINCT FROM OLD AND
-        NEW.updated_at IS NOT DISTINCT FROM OLD.updated_at
-        ) THEN
-        NEW.updated_at := current_timestamp;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+
