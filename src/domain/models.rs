@@ -3,16 +3,16 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
+use crate::domain::param_models::{OrderType, SellBuy};
 use bigdecimal::BigDecimal;
-use chrono::DateTime;
 use chrono::offset::Utc;
+use chrono::DateTime;
 use diesel::pg::Pg;
 use diesel::prelude::*;
-use diesel::Queryable;
 use diesel::serialize::ToSql;
+use diesel::Queryable;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
 // #[derive(Queryable, Debug, Serialize, Deserialize, Default)]
 // struct EthAddress(Address);
 
@@ -80,7 +80,6 @@ pub struct NewTgUser {
   Debug,
   Serialize,
   Deserialize,
-  Default,
   JsonSchema,
   Insertable,
   Selectable,
@@ -94,7 +93,7 @@ pub struct TradingOrder {
   pub deleted: bool,
   pub create_time: DateTime<Utc>,
   pub update_time: Option<DateTime<Utc>>,
-  pub sell_or_buy: String,
+  pub sell_or_buy: SellBuy,
   pub target_token: String,
   pub from_token: String,
   pub trading_uer: i64,
@@ -109,44 +108,11 @@ pub struct TradingOrder {
   pub pending_target_price: Option<BigDecimal>,
   pub expire_at: Option<DateTime<Utc>>,
   pub fee: Option<BigDecimal>,
-  pub order_type: String,
+  pub order_type: OrderType,
   pub slippage: Option<BigDecimal>,
   pub user_addr: String,
-
-
 }
 
-#[derive(
-  Queryable,
-  Debug,
-  Serialize,
-  Deserialize,
-  Default,
-  JsonSchema,
-  Insertable,
-  Selectable,
-  AsChangeset,
-  Clone
-)]
-#[diesel(table_name = crate::schema::trading_order)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct NewTradingOrder {
-  pub sell_or_buy: String,
-  pub target_token: String,
-  pub from_token: String,
-  // pub trading_uer: i64,
-  pub boost_mode: bool,
-  pub mev_protected: bool,
-  pub priority_fee: Option<BigDecimal>,
 
-  // pub target_amount: Option<BigDecimal>,
-  pub from_token_amount: BigDecimal,
-  // pub pending_target_price: Option<BigDecimal>,
-  // pub expire_at: Option<DateTime<Utc>>,
-  pub order_type: String,
-  pub slippage: Option<BigDecimal>,
-  pub user_addr: String,
-
-}
 
 
