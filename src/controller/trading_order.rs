@@ -21,13 +21,13 @@ use bigdecimal::{BigDecimal, One, ToPrimitive};
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 
+use crate::contract::transfer_with_nonce;
 use crate::contract::uni_router2::get_uni_router2;
 use crate::contract::uni_router2::UNI_ROUTER2::UNI_ROUTER2Instance;
-use crate::contract::transfer_with_nonce;
 use crate::controller::tg_user::user_by_addr;
 use crate::controller::{PageParam, PageRes};
-use crate::domain::models::TradingOrder;
-use crate::domain::param_models::{NewTradingOrder, OrderType, SellBuy};
+use crate::domain::models::{TgUser, TradingOrder};
+use crate::domain::param_models::{NewTradingOrder, NewTradingOrderWithUserId, OrderType, SellBuy};
 use crate::schema::trading_order::dsl::trading_order;
 use crate::schema::trading_order::table;
 
@@ -55,11 +55,26 @@ async fn create_trading_order(State(pool): State<Pool<ConnectionManager<PgConnec
     OrderType::Pending => {}
     OrderType::Following => {}
   }
+  let user_address = Address::from_hex(new_order.user_addr.clone()).unwrap();
+  let user = user_by_addr(user_address, &mut connection).unwrap();
 
-  match new_order.make_trading(&mut connection).await {
+  match new_order.make_trading(user.clone()).await {
     Ok((tx_hash, eth)) => {
+      let order_with_user_id = NewTradingOrderWithUserId {
+        sell_or_buy: new_order.sell_or_buy,
+        target_token: new_order.target_token,
+        from_token: new_order.from_token,
+        trading_uer: user.id,
+        boost_mode: new_order.boost_mode,
+        mev_protected: new_order.mev_protected,
+        priority_fee: new_order.priority_fee,
+        from_token_amount: new_order.from_token_amount,
+        order_type: new_order.order_type,
+        slippage: new_order.slippage,
+        user_addr: new_order.user_addr,
+      };
       // todo
-      let result = diesel::insert_into(trading_order).values(new_order).returning(TradingOrder::as_returning()).get_result(&mut connection).expect("Error saving new TradingOrder");
+      let result = diesel::insert_into(trading_order).values(order_with_user_id).returning(TradingOrder::as_returning()).get_result(&mut connection).expect("Error saving new TradingOrder");
 
 
       Ok(Json::from(tx_hash.to_string()))
@@ -74,9 +89,8 @@ async fn create_trading_order(State(pool): State<Pool<ConnectionManager<PgConnec
 
 
 impl NewTradingOrder {
-  async fn make_trading(&self, conn: &mut PooledConnection<ConnectionManager<PgConnection>>) -> Result<(TxHash, TxHash), Box<dyn Error>> {
+  async fn make_trading(&self, user: TgUser) -> Result<(TxHash, TxHash), Box<dyn Error>> {
     let user_address = Address::from_hex(self.user_addr.clone())?;
-    let user = user_by_addr(user_address, conn).unwrap();
     let pk = hex::decode(user.private_key.unwrap())?;
     let wallet = EthereumWallet::from(PrivateKeySigner::from_slice(&pk)?);
     let provider = ProviderBuilder::new()
@@ -139,7 +153,6 @@ impl NewTradingOrder {
         Ok((*swap_res.tx_hash(), fee_tx_hash))
       }
     }
-
   }
 
   async fn get_amount_out(&self, uni_router2: &UNI_ROUTER2Instance<Http<Client>, FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum>>, amount_in: Uint<256, 4>, path: &Vec<Address>) -> Result<U256, Box<dyn Error>> {

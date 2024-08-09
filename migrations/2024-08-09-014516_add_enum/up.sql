@@ -1,3 +1,3 @@
 -- Your SQL goes here
-CREATE TYPE order_type AS ENUM ('Trading', 'Pending', 'Following');
-CREATE TYPE sell_buy AS ENUM ('Sell', 'Buy');
+CREATE TYPE order_type AS ENUM ('trading', 'pending', 'following');
+CREATE TYPE sell_buy AS ENUM ('sell', 'buy');

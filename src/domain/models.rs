@@ -47,7 +47,8 @@ pub struct FollowingOrder {
   JsonSchema,
   Selectable,
   Identifiable,
-  AsChangeset
+  AsChangeset,
+  Clone
 )]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
