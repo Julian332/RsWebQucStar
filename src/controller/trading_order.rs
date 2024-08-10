@@ -18,7 +18,7 @@ use alloy::transports::http::{Client, Http};
 use axum::extract::{Path, State};
 use axum::response::Json;
 use bigdecimal::{BigDecimal, One, ToPrimitive};
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 
 use crate::contract::transfer_with_nonce;

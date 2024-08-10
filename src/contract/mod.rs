@@ -3,12 +3,14 @@ use std::str::FromStr;
 
 use alloy::network::{Ethereum, EthereumWallet, TransactionBuilder};
 use alloy::primitives::{Address, TxHash, U256};
-use alloy::providers::{Provider, ReqwestProvider};
 use alloy::providers::fillers::{FillProvider, JoinFill, RecommendedFiller, WalletFiller};
+use alloy::providers::{Provider, ReqwestProvider};
 use alloy::rpc::types::TransactionRequest;
 use alloy::transports::http::{Client, Http};
 
 pub mod uni_router2;
+pub mod uni_graph;
+mod uni_graph_params;
 
 pub async fn transfer(provider: FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum>, to: Address, value: U256) -> Result<TxHash, Box<dyn Error>> {
   // let provider: FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum> = ProviderBuilder::new()

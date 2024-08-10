@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod tg_user;
 pub mod trading_order;
-
+pub mod analysis;
 
 #[derive(
   Debug,

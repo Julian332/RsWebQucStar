@@ -36,6 +36,7 @@ async fn main() {
 
   let app = ApiRouter::new()
     .nest_api_service("/tg_users", controller::tg_user::tg_user_routes(connection_pool.clone()))
+    .nest_api_service("/analysis", controller::analysis::analysis_routes(connection_pool.clone()))
     .nest_api_service("/trading_order", controller::trading_order::trading_order_routes(connection_pool.clone()))
     // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
     .nest_api_service("/docs", docs_routes())
