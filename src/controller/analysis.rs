@@ -1,29 +1,21 @@
-use crate::contract::uni_graph::{get_user_swaps, Swap};
+use crate::contract::uni_graph::get_user_swaps;
 use crate::controller::{PageParam, PageRes};
 use crate::domain::models::{NewTgUser, TgUser};
-use crate::openapi::default_resp_docs_with_exam;
-use crate::schema::tg_user::address;
-use crate::schema::tg_user::dsl::tg_user;
+
 use aide::axum::routing::{get_with, post_with, put_with};
 use aide::axum::ApiRouter;
 use alloy::hex::FromHex;
 use alloy::primitives::Address;
-use alloy::providers::ProviderBuilder;
-use alloy::signers::k256::elliptic_curve::generic_array::typenum::private::Trim;
-use alloy::sol_types::private::SolTypeValue;
-use alloy::transports::http::reqwest::Url;
-use axum::extract::{Path, State};
+
+use axum::extract::Path;
 use axum::response::Json;
-use bigdecimal::num_bigint::BigInt;
-use bigdecimal::{BigDecimal, FromPrimitive};
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+use bigdecimal::BigDecimal;
+use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::PgConnection;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::env;
-use std::error::Error;
-use std::ops::Sub;
+
 use std::str::FromStr;
 
 pub(crate) fn analysis_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
@@ -140,7 +132,9 @@ pub async fn analysis_addr(
 
   let mut tokens: Vec<_> = buy_map.into_iter().map(|(k, v)| {
     let mut sell_sum = BigDecimal::from(0);
-    for x in sell_map.get(&k).unwrap_or(&vec![]) {
+    let empty_vec = vec![];
+    let sells = sell_map.get(&k).unwrap_or(&empty_vec);
+    for x in sells {
       sell_sum += &x.eth_amount
     }
     let mut buy_sum = BigDecimal::from(0);
@@ -149,7 +143,10 @@ pub async fn analysis_addr(
       buy_sum += &x.eth_amount
     }
 
-    if v.last().unwrap().token_price.gt(&v.first().unwrap().token_price) {
+    if match sells.last() {
+      None => { BigDecimal::from(0) }
+      Some(x) => { x.token_price.clone() }
+    }.gt(&v.first().unwrap().token_price) {
       (k, (true, sell_sum - buy_sum))
     } else {
       (k, (false, sell_sum - buy_sum))
