@@ -37,5 +37,6 @@ futures-util = "0.3"
 #diesel-enum = { version = "0.2.1" }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 reqwest = "0.12.5"
+futures = "0.3.30"
 [build-dependencies]
 #vergen = { version = "8.0.0", features = ["build", "cargo", "git", "gitcl"] }

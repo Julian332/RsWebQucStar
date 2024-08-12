@@ -30,6 +30,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::str::FromStr;
+use std::time::Duration;
 
 pub(crate) fn analysis_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
   ApiRouter::new()
@@ -199,7 +200,7 @@ sol! {
     );}
 }
 
-pub async fn subscribe_addr(State(pool): State<Pool<ConnectionManager<PgConnection>>>, Path(addr): Path<String>) -> Result<Json<()>, String> {
+pub async fn subscribe_addr(State(pool): State<Pool<ConnectionManager<PgConnection>>>, Path(addr): Path<String>) -> Result<Json<bool>, String> {
   let mut connection = pool.get().unwrap();
   let addr = addr.trim().to_lowercase();
   let count: i64 = addr_subscribes.filter(following_addr.eq(addr.as_str())).count().get_result(&mut connection).unwrap();
@@ -213,39 +214,36 @@ pub async fn subscribe_addr(State(pool): State<Pool<ConnectionManager<PgConnecti
   // ProviderBuilder::new();
 
 
-  return Ok(Json(()));
+  Ok(Json(true))
 }
 
 pub async fn listen_and_send(pool: Pool<ConnectionManager<PgConnection>>) {
+  tracing::info!("listen_and_send started");
   let mut connection = pool.get().unwrap();
 
   let rpc_url = env::var("WS_ETH_RPC").unwrap();
 
-  // Create the provider.
   let ws = WsConnect::new(rpc_url);
   let provider = ProviderBuilder::new().on_ws(ws).await.unwrap();
 
   let filter = Filter::new()
-    // .address(uniswap_token_address)
-    // By specifying an `event` or `event_signature` we listen for a specific event of the
-    // contract. In this case the `Transfer(address,address,uint256)` event.
     .event("Swap(address,uint256,uint256,uint256,uint256,address)")
     .from_block(BlockNumberOrTag::Latest);
 
   // Subscribe to logs.
-  let sub = provider.subscribe_logs(&filter).await.unwrap();
-  let mut stream = sub.into_stream();
+  let poller = provider.watch_logs(&filter).await.unwrap();
+  let mut stream = poller.with_poll_interval(Duration::from_secs(6)).into_stream();
 
-  while let Some(log) = stream.next().await {
+  while let Some(logs) = stream.next().await {
     let subscribes: Vec<AddrSubscribes> = addr_subscribes.filter(deleted.eq(false)).select(AddrSubscribes::as_select()).get_results(&mut connection).unwrap();
-    let subscribes : HashSet<_> = subscribes.iter().map(|x| { Address::from_hex(&x.following_addr).unwrap() }).collect();
-    let swap = log.log_decode::<Swap>().unwrap().inner.data;
-    let address = Address::from(swap.to);
-    if subscribes.contains(&address) {
-      todo!("推送")
+    let subscribes: HashSet<_> = subscribes.iter().map(|x| { Address::from_hex(&x.following_addr).unwrap() }).collect();
+    for log in logs {
+      let swap = log.log_decode::<Swap>().unwrap().inner.data;
+      if subscribes.contains(&swap.to) {
+        todo!("推送")
+      }
     }
   }
-  
 }
 
 #[derive(JsonSchema, Serialize, Deserialize)]

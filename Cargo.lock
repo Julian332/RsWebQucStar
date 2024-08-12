@@ -3444,6 +3444,7 @@ dependencies = [
  "diesel",
  "diesel-derive-enum",
  "dotenvy",
+ "futures",
  "futures-util",
  "hmac",
  "profile",
