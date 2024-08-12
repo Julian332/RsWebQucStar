@@ -8,9 +8,9 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use serde::{Deserialize, Serialize};
 
-use openapi::docs::docs_routes;
-
+use crate::controller::analysis::listen_and_send;
 use crate::openapi::api_docs;
+use openapi::docs::docs_routes;
 
 mod openapi;
 mod domain;
@@ -18,6 +18,7 @@ mod controller;
 pub mod schema;
 pub mod apis;
 pub mod contract;
+pub mod models;
 
 #[tokio::main]
 async fn main() {
@@ -43,8 +44,8 @@ async fn main() {
 
     .finish_api_with(&mut api, api_docs)
     .layer(Extension(Arc::new(api)))
-    .with_state(connection_pool);
-
+    .with_state(connection_pool.clone());
+  tokio::spawn(listen_and_send(connection_pool.clone()));
 
   // run our app with hyper, listening globally on port 3000
   let listener = tokio::net::TcpListener::bind("0.0.0.0:4090").await.unwrap();
@@ -59,7 +60,6 @@ fn set_env() {
     _ => {
       dotenvy::from_filename("env_dev.env").ok();
     }
-
   }
 }
 

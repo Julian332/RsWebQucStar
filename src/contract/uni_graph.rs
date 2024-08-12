@@ -3,6 +3,7 @@
 use chrono::Days;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::env;
 
 #[derive(Serialize, Deserialize)]
 pub struct UniGraphResp {
@@ -129,15 +130,6 @@ pub async fn get_user_swaps(user_addr: String) -> Result<Vec<Swap>, Box<dyn std:
 
 
   let three_day_ago = chrono::Utc::now().checked_sub_days(Days::new(3)).unwrap().timestamp();
-  // let uni_graph_params = UniGraphParams {
-  //   variables: Variables {
-  //     addr: user_addr,
-  //     timestamp: three_day_ago,
-  //   },
-  //   query: r#"
-  // query getShop($addr: String!,$timestamp:BigInt!){\n  swaps(\n    where: {and: [{from: $addr }\n    , {or: [{pair_: {token0: \"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"}}, {pair_: {token1: \"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"}}]}\n    ,{timestamp_gte: $timestamp }]\n    \n    }\n  ) {\n    from\n    amount0In\n    amount0Out\n    amount1In\n    amount1Out\n    \n    \n    timestamp\n    pair {\n        token0Price\n        token1Price\n      token0 {\n        id\n      }\n      token1 {\n        id\n      }\n    }\n  }\n}
-  // "#.to_string(),
-  // };
   let data = r#"
 {
     "query": "  query getShop($addr: String!,$timestamp:BigInt!){\n  swaps(\n    where: {and: [{from: $addr }\n    , {or: [{pair_: {token0: \"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"}}, {pair_: {token1: \"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\"}}]}\n    ,{timestamp_gte: $timestamp }]\n    \n    }\n  ) {\n    from\n    amount0In\n    amount0Out\n    amount1In\n    amount1Out\n    \n    \n    timestamp\n    pair {\n        token0Price\n        token1Price\n      token0 {\n        id\n      }\n      token1 {\n        id\n      }\n    }\n  }\n}",
@@ -148,20 +140,20 @@ pub async fn get_user_swaps(user_addr: String) -> Result<Vec<Swap>, Box<dyn std:
 }
 "#;
   
-  let mut json: serde_json::Value = serde_json::from_str(&data)?;
+  let mut json: Value = serde_json::from_str(data)?;
   let variables = json.get_mut("variables").unwrap();
   let addr = variables.get_mut("addr").unwrap();
   *addr = Value::from(user_addr);
 
   let timestamp = variables.get_mut("timestamp").unwrap();
   *timestamp = Value::from(three_day_ago);
-  let request = client.request(reqwest::Method::POST, "https://subgraph.satsuma-prod.com/7e1fb37825fa/julians-team--193144/univ2/api")
+  let request = client.request(reqwest::Method::POST, env::var("UNI_GRAPH_URL")?)
     .headers(headers)
     .json(&json);
 
   let response = request.send().await?;
   let body = response.text().await?;
-  println!("{}", body);
+  // println!("{}", body);
   let uni_graph_resp = serde_json::from_str::<UniGraphResp>(&body)?;
 
   Ok(uni_graph_resp.data.swaps)

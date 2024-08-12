@@ -1,21 +1,34 @@
 use crate::contract::uni_graph::get_user_swaps;
 use crate::controller::{PageParam, PageRes};
-use crate::domain::models::{NewTgUser, TgUser};
+use crate::models::{AddrSubscribes, NewTgUser, TgUser};
 
 use aide::axum::routing::{get_with, post_with, put_with};
 use aide::axum::ApiRouter;
 use alloy::hex::FromHex;
 use alloy::primitives::Address;
 
-use axum::extract::Path;
+use crate::controller::analysis::IUniswapV2Pair::{IUniswapV2PairEvents, Swap};
+use crate::domain::param_models::NewAddrSubscribes;
+use crate::schema;
+use crate::schema::addr_subscribes::dsl::addr_subscribes;
+use crate::schema::addr_subscribes::{deleted, following_addr};
+use alloy::eips::BlockNumberOrTag;
+use alloy::providers::{Provider, ProviderBuilder, WsConnect};
+use alloy::rpc::types::Filter;
+use alloy::sol;
+use axum::extract::{Path, State};
 use axum::response::Json;
 use bigdecimal::BigDecimal;
+use diesel::prelude::*;
+use diesel::query_dsl::InternalJoinDsl;
 use diesel::r2d2::{ConnectionManager, Pool};
-use diesel::PgConnection;
+use diesel::sql_types::BigInt;
+use diesel::{insert_into, ExpressionMethods, PgConnection, QueryDsl, SelectableHelper};
+use futures_util::StreamExt;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
+use std::collections::{HashMap, HashSet};
+use std::env;
 use std::str::FromStr;
 
 pub(crate) fn analysis_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
@@ -23,6 +36,11 @@ pub(crate) fn analysis_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) 
     .api_route(
       "/analysis_addr/:addr",
       get_with(analysis_addr, |x| { x.description("analysis_addr") }),
+      // .delete_with(delete_todo, empty_resp_docs),
+    )
+    .api_route(
+      "/subscribe_addr/:addr",
+      get_with(subscribe_addr, |x| { x.description("subscribe_addr") }),
       // .delete_with(delete_todo, empty_resp_docs),
     )
     .with_state(conn_pool)
@@ -42,8 +60,7 @@ struct BuySwap {
   pub token_price: BigDecimal,
   pub timestamp: u64,
 }
-pub async fn analysis_addr(
-  Path(addr): Path<String>) -> Result<Json<AnalysisResp>, String> {
+pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp>, String> {
   let swaps = match get_user_swaps(addr).await {
     Ok(x) => { x }
     Err(e) => {
@@ -168,6 +185,67 @@ pub async fn analysis_addr(
     win_rate: BigDecimal::from(win_count).with_scale(6) / BigDecimal::from(tokens.len() as i64),
     tokens: tokens.into_iter().map(|x| { (x.0.to_string(), (x.1.0, x.1.1)) }).collect(),
   }))
+}
+
+sol! {
+   interface  IUniswapV2Pair {
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );}
+}
+
+pub async fn subscribe_addr(State(pool): State<Pool<ConnectionManager<PgConnection>>>, Path(addr): Path<String>) -> Result<Json<()>, String> {
+  let mut connection = pool.get().unwrap();
+  let addr = addr.trim().to_lowercase();
+  let count: i64 = addr_subscribes.filter(following_addr.eq(addr.as_str())).count().get_result(&mut connection).unwrap();
+  if count >= 1 { return Err("already  subscribed".to_string()); }
+  let new_addr_subscribes = NewAddrSubscribes {
+    following_addr: addr.clone(),
+    subscribers: vec![],
+  };
+  let new_addr_subscribes = insert_into(addr_subscribes).values(new_addr_subscribes).returning(AddrSubscribes::as_returning()).get_result(&mut connection).unwrap();
+  // tokio::spawn(subscribe(Address::from_hex(addr).unwrap()));
+  // ProviderBuilder::new();
+
+
+  return Ok(Json(()));
+}
+
+pub async fn listen_and_send(pool: Pool<ConnectionManager<PgConnection>>) {
+  let mut connection = pool.get().unwrap();
+
+  let rpc_url = env::var("WS_ETH_RPC").unwrap();
+
+  // Create the provider.
+  let ws = WsConnect::new(rpc_url);
+  let provider = ProviderBuilder::new().on_ws(ws).await.unwrap();
+
+  let filter = Filter::new()
+    // .address(uniswap_token_address)
+    // By specifying an `event` or `event_signature` we listen for a specific event of the
+    // contract. In this case the `Transfer(address,address,uint256)` event.
+    .event("Swap(address,uint256,uint256,uint256,uint256,address)")
+    .from_block(BlockNumberOrTag::Latest);
+
+  // Subscribe to logs.
+  let sub = provider.subscribe_logs(&filter).await.unwrap();
+  let mut stream = sub.into_stream();
+
+  while let Some(log) = stream.next().await {
+    let subscribes: Vec<AddrSubscribes> = addr_subscribes.filter(deleted.eq(false)).select(AddrSubscribes::as_select()).get_results(&mut connection).unwrap();
+    let subscribes : HashSet<_> = subscribes.iter().map(|x| { Address::from_hex(&x.following_addr).unwrap() }).collect();
+    let swap = log.log_decode::<Swap>().unwrap().inner.data;
+    let address = Address::from(swap.to);
+    if subscribes.contains(&address) {
+      todo!("推送")
+    }
+  }
+  
 }
 
 #[derive(JsonSchema, Serialize, Deserialize)]

@@ -1,14 +1,14 @@
-use aide::axum::ApiRouter;
 use aide::axum::routing::{get_with, post_with, put_with};
+use aide::axum::ApiRouter;
 use alloy::primitives::Address;
 use alloy::signers::k256::elliptic_curve::generic_array::typenum::private::Trim;
 use axum::extract::{Path, State};
 use axum::response::Json;
-use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 
 use crate::controller::{PageParam, PageRes};
-use crate::domain::models::{NewTgUser, TgUser};
+use crate::models::{NewTgUser, TgUser};
 use crate::openapi::default_resp_docs_with_exam;
 use crate::schema::tg_user::address;
 use crate::schema::tg_user::dsl::tg_user;

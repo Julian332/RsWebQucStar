@@ -28,6 +28,29 @@ pub struct FollowingOrder {
   pub update_time: Option<DateTime<Utc>>,
 }
 
+
+#[derive(
+  Queryable,
+  Debug,
+  Serialize,
+  Deserialize,
+  Default,
+  JsonSchema,
+  Selectable,
+  Identifiable,
+  AsChangeset,
+  Clone
+)]
+#[diesel(table_name = crate::schema::addr_subscribes)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct AddrSubscribes {
+  pub id: i64,
+  pub deleted: bool,
+  pub create_time: DateTime<Utc>,
+  pub update_time: Option<DateTime<Utc>>,
+  pub following_addr: String,
+  pub subscribers: Vec<Option<String>>,
+}
 // #[derive(Queryable, Selectable, Insertable, Debug)]
 // #[diesel(table_name = crate::schema::posts)]
 // #[diesel(check_for_backend(diesel::pg::Pg))]

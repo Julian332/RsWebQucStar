@@ -1,13 +1,24 @@
 // @generated automatically by Diesel CLI.
 
 pub mod sql_types {
-  #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-  #[diesel(postgres_type(name = "order_type"))]
-  pub struct OrderType;
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "order_type"))]
+    pub struct OrderType;
 
-  #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-  #[diesel(postgres_type(name = "sell_buy"))]
-  pub struct SellBuy;
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "sell_buy"))]
+    pub struct SellBuy;
+}
+
+diesel::table! {
+    addr_subscribes (id) {
+        id -> Int8,
+        deleted -> Bool,
+        create_time -> Timestamptz,
+        update_time -> Nullable<Timestamptz>,
+        following_addr -> Varchar,
+        subscribers -> Array<Nullable<Text>>,
+    }
 }
 
 diesel::table! {
@@ -65,6 +76,7 @@ diesel::table! {
 }
 
 diesel::allow_tables_to_appear_in_same_query!(
+    addr_subscribes,
     following_order,
     tg_user,
     trading_order,

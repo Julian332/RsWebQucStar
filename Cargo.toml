@@ -11,7 +11,7 @@ axum-macros = "0.4.1"
 
 aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros", ] }
 
-diesel = { version = "2.2.2", features = ["postgres", "extras"] }
+diesel = { version = "2.2.2", features = ["postgres", "extras",] }
 
 dotenvy = "0.15.7"
 
@@ -32,6 +32,7 @@ base64 = "0.22.1"
 sha2 = "0.10.8"
 profile = "0.1.1"
 tracing = "0.1.40"
+futures-util = "0.3"
 
 #diesel-enum = { version = "0.2.1" }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }

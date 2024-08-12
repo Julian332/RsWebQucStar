@@ -26,8 +26,8 @@ use crate::contract::uni_router2::get_uni_router2;
 use crate::contract::uni_router2::UNI_ROUTER2::UNI_ROUTER2Instance;
 use crate::controller::tg_user::user_by_addr;
 use crate::controller::{PageParam, PageRes};
-use crate::domain::models::{TgUser, TradingOrder};
 use crate::domain::param_models::{NewTradingOrder, NewTradingOrderWithUserId, OrderType, SellBuy};
+use crate::models::{TgUser, TradingOrder};
 use crate::schema::trading_order::dsl::trading_order;
 use crate::schema::trading_order::table;
 

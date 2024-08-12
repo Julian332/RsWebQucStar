@@ -1,5 +1,6 @@
 // #[macro_use] extern crate diesel;
 use bigdecimal::BigDecimal;
+use chrono::{DateTime, Utc};
 use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -100,29 +101,15 @@ pub enum OrderType {
   Following,
 }
 
-// #[derive(
-//   Debug,
-//   Serialize,
-//   Insertable,
-//   Deserialize,
-//   JsonSchema,
-//   Clone
-// )]
-// pub struct NewTradingOrderParams {
-//   pub sell_or_buy: SellBuy,
-//   pub target_token: String,
-//   pub from_token: String,
-//   // pub trading_uer: i64,
-//   pub boost_mode: bool,
-//   pub mev_protected: bool,
-//   pub priority_fee: Option<BigDecimal>,
-// 
-//   // pub target_amount: Option<BigDecimal>,
-//   pub from_token_amount: BigDecimal,
-//   // pub pending_target_price: Option<BigDecimal>,
-//   // pub expire_at: Option<DateTime<Utc>>,
-//   pub order_type: OrderType,
-//   pub slippage: Option<BigDecimal>,
-//   pub user_addr: String,
-// 
-// }
+#[derive(Debug)]
+#[derive(Queryable,Insertable,Serialize,Deserialize,JsonSchema,Clone)]
+#[diesel(table_name = crate::schema::addr_subscribes)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewAddrSubscribes {
+  // pub id: i64,
+  // pub deleted: bool,
+  // pub create_time: DateTime<Utc>,
+  // pub update_time: Option<DateTime<Utc>>,
+  pub following_addr: String,
+  pub subscribers: Vec<Option<String>>,
+}
