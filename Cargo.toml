@@ -33,7 +33,7 @@ sha2 = "0.10.8"
 profile = "0.1.1"
 tracing = "0.1.40"
 futures-util = "0.3"
-
+eyre = "0.6.12"
 #diesel-enum = { version = "0.2.1" }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 reqwest = "0.12.5"
