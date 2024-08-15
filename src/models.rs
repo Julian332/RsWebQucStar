@@ -88,7 +88,7 @@ pub struct TgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable, Selectable)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable, Selectable,AsChangeset)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTgUser {

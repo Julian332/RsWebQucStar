@@ -1,7 +1,6 @@
 use aide::axum::routing::{get_with, post_with, put_with};
 use aide::axum::ApiRouter;
 use alloy::primitives::Address;
-use alloy::signers::k256::elliptic_curve::generic_array::typenum::private::Trim;
 use axum::extract::{Path, State};
 use axum::response::Json;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
@@ -9,15 +8,19 @@ use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQu
 
 use crate::controller::{PageParam, PageRes};
 use crate::models::{NewTgUser, TgUser};
-use crate::openapi::default_resp_docs_with_exam;
-use crate::schema::tg_user::address;
+use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
 use crate::schema::tg_user::dsl::tg_user;
+use crate::schema::tg_user::address;
+use crate::web_fn_gen;
+
+web_fn_gen! {tg_user,NewTgUser,TgUser}
+// web_fn_update!{tg_user,NewTgUser,TgUser}
 
 pub(crate) fn tg_user_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
   ApiRouter::new()
     .api_route(
       "/create_tg_user",
-      post_with(create_tg_user, default_resp_docs_with_exam::<TgUser>),
+      post_with(create_tg_user, empty_resp_docs),
       // .get_with(list_todos, empty_resp_docs),
     )
     .api_route(
@@ -37,11 +40,32 @@ async fn create_tg_user(State(pool): State<Pool<ConnectionManager<PgConnection>>
   // if let Some(private_key) = new_user.private_key {
   //   new_user.private_key = Some(private_key.trim());
   // }
-  
+
   let result = diesel::insert_into(tg_user).values(new_user).returning(TgUser::as_returning()).get_result(&mut connection).expect("Error saving new TgUser");
 
   Ok(Json::from(result))
 }
+
+
+// async fn web_create<Tab, New, Return>(
+//   State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+//   Json(new): Json<New>)
+//   -> Result<Json<Return>, String>
+// where
+//   Tab: Table + Default,
+//   New: Insertable<Tab>
+// // Return: SelectableHelper<Pg>,
+// {
+//   let mut connection = pool.get().unwrap();
+//
+//
+//   let insert_statement = diesel::insert_into(Tab::default());
+//   let insert_statement = insert_statement.values(new);
+//   // let insert_statement = insert_statement.returning(Return::as_returning());
+//   let result = insert_statement.execute(&mut connection).expect("Error saving new Entity");
+//
+//   Ok(Json::from(result))
+// }
 pub async fn get_user_by_id(
   State(pool): State<Pool<ConnectionManager<PgConnection>>>,
   Path(id_param): Path<i64>) -> Result<Json<Option<TgUser>>, String> {
@@ -68,7 +92,7 @@ async fn update_by_id(
   Path(id_param): Path<i64>,
   Json(user): Json<TgUser>) -> Result<Json<bool>, String> {
   let mut connection = pool.get().unwrap();
-  let result = diesel::update(tg_user.find(id_param)).set(&user).execute(&mut connection).unwrap();
+  let result = diesel::update(tg_user.find(id_param)).set(crate::schema::tg_user::deleted.eq(true)).execute(&mut connection).unwrap();
   Ok(Json(result == 1))
 }
 
