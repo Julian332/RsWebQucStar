@@ -1,3 +1,4 @@
+use aide::axum::routing::delete_with;
 use crate::models::{NewTgUser, TgUser};
 use axum::extract::State;
 use axum::Json;
@@ -9,7 +10,6 @@ use serde::{Deserialize, Serialize};
 pub mod tg_user;
 pub mod trading_order;
 pub mod analysis;
-pub mod macros;
 
 #[derive(
   Debug,
@@ -111,4 +111,38 @@ macro_rules! web_fn_gen {
   };
 }
 
-
+#[macro_export]
+macro_rules! web_router_gen {
+  ($table:ident ,$new:ident, $result:ident) => {
+    
+    use aide::axum::routing::{get_with, post_with, put_with ,delete_with};
+    use aide::axum::ApiRouter;
+    use alloy::primitives::Address;
+    use axum::extract::{Path, State};
+    use axum::response::Json;
+    use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+    use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+    use crate::controller::{PageParam, PageRes};
+    use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
+    
+    pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
+      ApiRouter::new()
+        .api_route(
+          "/create_entity",
+          post_with(create_entity, empty_resp_docs),
+          // .get_with(list_todos, empty_resp_docs),
+        )
+        .api_route(
+          "/get_entity_by_id/:id",
+          get_with(get_entity_by_id, default_resp_docs_with_exam::<$result>),
+          // .delete_with(delete_todo, empty_resp_docs),
+        )
+        .api_route("/update_entity_by_id/:id", put_with(update_entity_by_id, default_resp_docs_with_exam::<$result>))
+        .api_route("/delete_entity_by_id/:id", delete_with(delete_entity_by_id, default_resp_docs_with_exam::<$result>))
+        .api_route("/get_entity_page", post_with(get_entity_page, default_resp_docs_with_exam::<PageRes<$result>>))
+        .with_state(conn_pool)
+    }
+    
+    web_fn_gen!($table,$new,$result);
+  }
+}

@@ -13,8 +13,6 @@ use diesel::serialize::ToSql;
 use diesel::Queryable;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-// #[derive(Queryable, Debug, Serialize, Deserialize, Default)]
-// struct EthAddress(Address);
 
 
 #[derive(Debug)]
@@ -49,17 +47,9 @@ pub struct AddrSubscribes {
   pub create_time: DateTime<Utc>,
   pub update_time: Option<DateTime<Utc>>,
   pub following_addr: String,
-  pub subscribers: Vec<Option<String>>,
+  pub subscribers: Option<Vec<Option<String>>>,
 }
-// #[derive(Queryable, Selectable, Insertable, Debug)]
-// #[diesel(table_name = crate::schema::posts)]
-// #[diesel(check_for_backend(diesel::pg::Pg))]
-// pub struct Post {
-//   pub id: i32,
-//   pub title: String,
-//   pub body: String,
-//   pub published: bool,
-// }
+
 
 #[derive(
   Queryable,
@@ -88,12 +78,20 @@ pub struct TgUser {
   pub parent: Option<String>,
 }
 
-#[derive(Queryable, Debug, Serialize, Deserialize, Default, JsonSchema, Insertable, Selectable,AsChangeset)]
+#[derive(
+  Queryable,
+  Debug,
+  Serialize,
+  Deserialize,
+  Default,
+  JsonSchema,
+  Insertable,
+  Selectable,
+  AsChangeset
+)]
 #[diesel(table_name = crate::schema::tg_user)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewTgUser {
-  // #[serde(with = "chrono_datetime_as_bson_datetime")]
-
   pub address: String,
   pub private_key: Option<String>,
   pub parent: Option<String>,

@@ -111,5 +111,5 @@ pub struct NewAddrSubscribes {
   // pub create_time: DateTime<Utc>,
   // pub update_time: Option<DateTime<Utc>>,
   pub following_addr: String,
-  pub subscribers: Vec<Option<String>>,
+  pub subscribers: Option<Vec<Option<String>>>,
 }

@@ -62,6 +62,7 @@ struct BuySwap {
   pub timestamp: u64,
 }
 pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp>, String> {
+  let mainnet_weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
   let swaps = match get_user_swaps(addr).await {
     Ok(x) => { x }
     Err(e) => {
@@ -71,7 +72,7 @@ pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp
   };
   //sell "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
   let sell1 = swaps.iter().filter(|x| {
-    x.pair.token0.id == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" && x.amount0_in == "0"
+    x.pair.token0.id == mainnet_weth && x.amount0_in == "0"
   }).map(|x| {
     SellSwap {
       eth_amount: BigDecimal::from_str(&x.amount0_out).unwrap(),
@@ -82,7 +83,7 @@ pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp
     }
   });
   let mut sells: Vec<_> = swaps.iter().filter(|x| {
-    x.pair.token1.id == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" && x.amount1_in == "0"
+    x.pair.token1.id == mainnet_weth && x.amount1_in == "0"
   }).map(|x| {
     SellSwap {
       eth_amount: BigDecimal::from_str(&x.amount1_out).unwrap(),
@@ -95,7 +96,7 @@ pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp
   sells.sort_unstable_by(|l, r| { l.timestamp.cmp(&r.timestamp) });
 
   let buy1 = swaps.iter().filter(|x| {
-    x.pair.token0.id == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" && x.amount0_out == "0"
+    x.pair.token0.id == mainnet_weth && x.amount0_out == "0"
   }).map(|x| {
     BuySwap {
       eth_amount: BigDecimal::from_str(&x.amount0_in).unwrap(),
@@ -107,7 +108,7 @@ pub async fn analysis_addr(Path(addr): Path<String>) -> Result<Json<AnalysisResp
     }
   });
   let mut buys: Vec<_> = swaps.iter().filter(|x| {
-    x.pair.token1.id == "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" && x.amount1_out == "0"
+    x.pair.token1.id == mainnet_weth && x.amount1_out == "0"
   }).map(|x| {
     BuySwap {
       eth_amount: BigDecimal::from_str(&x.amount1_in).unwrap(),
@@ -207,7 +208,7 @@ pub async fn subscribe_addr(State(pool): State<Pool<ConnectionManager<PgConnecti
   if count >= 1 { return Err("already  subscribed".to_string()); }
   let new_addr_subscribes = NewAddrSubscribes {
     following_addr: addr.clone(),
-    subscribers: vec![],
+    subscribers: None,
   };
   let new_addr_subscribes = insert_into(addr_subscribes).values(new_addr_subscribes).returning(AddrSubscribes::as_returning()).get_result(&mut connection).unwrap();
   // tokio::spawn(subscribe(Address::from_hex(addr).unwrap()));

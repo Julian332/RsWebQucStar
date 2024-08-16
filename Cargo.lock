@@ -2819,6 +2819,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "quic_star"
+version = "0.1.0"
+dependencies = [
+ "aide",
+ "alloy",
+ "axum",
+ "axum-extra",
+ "axum-jsonschema",
+ "axum-macros",
+ "base64 0.22.1",
+ "bigdecimal",
+ "chrono",
+ "diesel",
+ "diesel-derive-enum",
+ "dotenvy",
+ "eyre",
+ "futures",
+ "futures-util",
+ "hmac",
+ "profile",
+ "reqwest",
+ "schemars",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3443,38 +3475,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "smart_wallet_following"
-version = "0.1.0"
-dependencies = [
- "aide",
- "alloy",
- "axum",
- "axum-extra",
- "axum-jsonschema",
- "axum-macros",
- "base64 0.22.1",
- "bigdecimal",
- "chrono",
- "diesel",
- "diesel-derive-enum",
- "dotenvy",
- "eyre",
- "futures",
- "futures-util",
- "hmac",
- "profile",
- "reqwest",
- "schemars",
- "serde",
- "serde_json",
- "sha2",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
 
 [[package]]
 name = "socket2"

@@ -1,11 +1,11 @@
 // @generated automatically by Diesel CLI.
 
 pub mod sql_types {
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[derive(diesel::query_builder::QueryId,  diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "order_type"))]
     pub struct OrderType;
 
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[derive(diesel::query_builder::QueryId,  diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "sell_buy"))]
     pub struct SellBuy;
 }
