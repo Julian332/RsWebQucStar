@@ -1,7 +1,7 @@
 use crate::models::{NewTgUser, TgUser};
 use crate::schema::tg_user::dsl::tg_user;
 use crate::schema::tg_user::address;
-use crate::{web_fn_gen, web_router_gen};
+use crate::{web_router_gen};
 
 
 web_router_gen! {tg_user,NewTgUser,TgUser}

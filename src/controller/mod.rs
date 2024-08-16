@@ -124,7 +124,7 @@ macro_rules! web_router_gen {
     use diesel::{ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
     use crate::controller::{PageParam, PageRes};
     use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
-    
+    use crate::web_fn_gen;
     pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
       ApiRouter::new()
         .api_route(

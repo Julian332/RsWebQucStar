@@ -9,7 +9,7 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use serde::{Deserialize, Serialize};
 
 use crate::controller::analysis::listen_and_send;
-use crate::openapi::api_docs;
+use crate::openapi::{api_docs, fallback};
 use openapi::docs::docs_routes;
 
 mod openapi;
@@ -24,7 +24,6 @@ pub mod models;
 async fn main() {
   tracing_subscriber::fmt::init();
   set_env();
-  // dotenvy::dotenv().ok();
 
   let connection_pool = get_connection_pool();
 
@@ -44,11 +43,13 @@ async fn main() {
 
     .finish_api_with(&mut api, api_docs)
     .layer(Extension(Arc::new(api)))
+    .fallback(fallback)
     .with_state(connection_pool.clone());
   tokio::spawn(listen_and_send(connection_pool.clone()));
 
   // run our app with hyper, listening globally on port 3000
-  let listener = tokio::net::TcpListener::bind("0.0.0.0:4090").await.unwrap();
+  let listener = tokio::net::TcpListener::bind(
+    format!("0.0.0.0:{}", env::var("SERVER_PORT").unwrap_or("4090".to_string()))).await.unwrap();
   axum::serve(listener, app).await.unwrap();
 }
 
