@@ -4,6 +4,9 @@ use std::sync::Arc;
 use aide::axum::ApiRouter;
 use aide::openapi::OpenApi;
 use axum::Extension;
+use axum_login::AuthManagerLayerBuilder;
+use axum_login::tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+use axum_login::tower_sessions::cookie::time::Duration;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use serde::{Deserialize, Serialize};
@@ -11,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::controller::analysis::listen_and_send;
 use crate::openapi::{api_docs, fallback};
 use openapi::docs::docs_routes;
+use crate::api_auth::Backend;
 
 mod openapi;
 mod domain;
@@ -19,6 +23,7 @@ pub mod schema;
 pub mod apis;
 pub mod contract;
 pub mod models;
+mod api_auth;
 
 #[tokio::main]
 async fn main() {
@@ -26,6 +31,17 @@ async fn main() {
   set_env();
 
   let connection_pool = get_connection_pool();
+
+  let session_store = MemoryStore::default();
+  let session_layer = SessionManagerLayer::new(session_store)
+    .with_secure(false)
+    .with_expiry(Expiry::OnInactivity(Duration::days(1)));
+  
+  let backend = Backend::new(connection_pool.clone());
+  let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
+
+
+
 
   aide::gen::on_error(|error| {
     println!("{error}");

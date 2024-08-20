@@ -4,10 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.7.5",features = ["macros"] }
+axum = { version = "^0.7.0",features = ["macros"] }
 axum-extra = "0.9.3"
 axum-jsonschema = { version = "0.8.0" ,features = ["aide"]}
 axum-macros = "0.4.1"
+axum-login = "0.15.3"
 
 aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros", ] }
 
@@ -38,5 +39,7 @@ eyre = "0.6.12"
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 reqwest = "0.12.5"
 futures = "0.3.30"
+
+password-auth = "1.0.0"
 [build-dependencies]
 #vergen = { version = "8.0.0", features = ["build", "cargo", "git", "gitcl"] }
