@@ -58,7 +58,7 @@ fn set_env() {
   match profile.as_str() {
     "release" => { dotenvy::from_filename("env_prod.env").ok(); }
     _ => {
-      dotenvy::from_filename("env_dev.env").ok();
+      dotenvy::from_filename(".env").ok();
     }
   }
 }

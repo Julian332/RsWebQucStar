@@ -85,8 +85,7 @@ macro_rules! web_fn_gen {
 
     async fn get_entity_by_id(
       State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-      Path(id_param): Path<i64>,
-      Json(new): Json<$new>) -> Result<Json<$result>, String> {
+      Path(id_param): Path<i64>) -> Result<Json<$result>, String> {
       let mut connection = pool.get().unwrap();
       let result = tg_user.find(id_param).select($result::as_select()).get_result(&mut connection).expect("get entity by id failed");
       Ok(Json(result))
@@ -94,8 +93,7 @@ macro_rules! web_fn_gen {
 
     async fn delete_entity_by_id(
       State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-      Path(id_param): Path<i64>,
-      Json(new): Json<$new>) -> Result<Json<$result>, String> {
+      Path(id_param): Path<i64>) -> Result<Json<$result>, String> {
       let mut connection = pool.get().unwrap();
       let result = diesel::update(tg_user.find(id_param)).set(crate::schema::$table::deleted.eq(true)).returning($result::as_returning()).get_result(&mut connection).expect("Error delete  entity");
       Ok(Json(result))
