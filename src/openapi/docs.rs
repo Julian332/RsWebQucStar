@@ -2,14 +2,14 @@ use std::sync::Arc;
 
 use aide::{
     axum::{
-        ApiRouter,
-        IntoApiResponse, routing::{get, get_with},
+        routing::{get, get_with},
+        ApiRouter, IntoApiResponse,
     },
     openapi::OpenApi,
     redoc::Redoc,
     scalar::Scalar,
 };
-use axum::{Extension, response::IntoResponse};
+use axum::{response::IntoResponse, Extension};
 
 use crate::openapi::extractors::Json;
 
@@ -44,7 +44,7 @@ pub fn docs_routes() -> ApiRouter {
             |p| p.security_requirement("ApiKey"),
         )
         .route("/private/api.json", get(serve_docs));
-        // .with_state(state);
+    // .with_state(state);
 
     // Afterwards we disable response inference because
     // it might be incorrect for other routes.

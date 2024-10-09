@@ -24,13 +24,34 @@ sol!(
     "src/contract/uni_router2.json"
 );
 
-pub async fn get_uni_router2(provider: FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum>) -> Result<UNI_ROUTER2Instance<Http<Client>, FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum>> , Box<dyn Error>> {
-  // let provider: FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum> = ProviderBuilder::new()
-  //   .with_recommended_fillers()
-  //   .wallet(ethereum_wallet)
-  //   .on_http(Url::from_str(env::var("ETH_RPC")?.as_str()).unwrap());
+pub async fn get_uni_router2(
+    provider: FillProvider<
+        JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>,
+        ReqwestProvider,
+        Http<Client>,
+        Ethereum,
+    >,
+) -> Result<
+    UNI_ROUTER2Instance<
+        Http<Client>,
+        FillProvider<
+            JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>,
+            ReqwestProvider,
+            Http<Client>,
+            Ethereum,
+        >,
+    >,
+    Box<dyn Error>,
+> {
+    // let provider: FillProvider<JoinFill<RecommendedFiller, WalletFiller<EthereumWallet>>, ReqwestProvider, Http<Client>, Ethereum> = ProviderBuilder::new()
+    //   .with_recommended_fillers()
+    //   .wallet(ethereum_wallet)
+    //   .on_http(Url::from_str(env::var("ETH_RPC")?.as_str()).unwrap());
 
-  let uni_router2 = UNI_ROUTER2::new(Address::from_str(env::var("UNI_ROUTER2_ADDR")?.as_str())?, provider);
+    let uni_router2 = UNI_ROUTER2::new(
+        Address::from_str(env::var("UNI_ROUTER2_ADDR")?.as_str())?,
+        provider,
+    );
 
-  Ok(uni_router2)
+    Ok(uni_router2)
 }

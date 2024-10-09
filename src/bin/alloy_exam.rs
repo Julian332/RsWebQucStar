@@ -20,22 +20,28 @@ sol!(
 );
 
 #[tokio::main]
-async fn main() -> Result<(),Box<dyn Error>> {
-  // Spin up a forked Anvil node.
-  // Ensure `anvil` is available in $PATH.
-  // let anvil = Anvil::new().fork("https://eth.merkle.io").try_spawn()?;
-  // 
-  // // Create a provider.
-  // let rpc_url = anvil.endpoint().parse()?;
-  let provider = ProviderBuilder::new().on_http(Url::from_str("https://eth-mainnet.g.alchemy.com/v2/bl_l3tjwjUkNOGgFF_UCer3-UbO5yRYU").unwrap());
+async fn main() -> Result<(), Box<dyn Error>> {
+    // Spin up a forked Anvil node.
+    // Ensure `anvil` is available in $PATH.
+    // let anvil = Anvil::new().fork("https://eth.merkle.io").try_spawn()?;
+    //
+    // // Create a provider.
+    // let rpc_url = anvil.endpoint().parse()?;
+    let provider = ProviderBuilder::new().on_http(
+        Url::from_str("https://eth-mainnet.g.alchemy.com/v2/bl_l3tjwjUkNOGgFF_UCer3-UbO5yRYU")
+            .unwrap(),
+    );
 
-  // Create a contract instance.
-  let contract = IWETH9::new(address!("C02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"), provider);
+    // Create a contract instance.
+    let contract = IWETH9::new(
+        address!("C02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
+        provider,
+    );
 
-  // Call the contract, retrieve the total supply.
-  let total_supply = contract.totalSupply().call().await?._0;
+    // Call the contract, retrieve the total supply.
+    let total_supply = contract.totalSupply().call().await?._0;
 
-  println!("WETH total supply is {total_supply}");
+    println!("WETH total supply is {total_supply}");
 
-  Ok(())
+    Ok(())
 }

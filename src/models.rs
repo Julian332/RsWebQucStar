@@ -3,22 +3,22 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-
-use chrono::{DateTime, Utc} ;
-use diesel::{Identifiable, Queryable};
+use chrono::{DateTime, Utc};
+use diesel::{Identifiable, Queryable, Selectable};
+use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Group {
-  pub id: i64,
-  pub name: String,
-  pub remark: String,
-  pub update_time: DateTime<Utc>,
-  pub create_time: DateTime<Utc>,
-  pub create_by: i64,
-  pub update_by: i64,
-  pub is_delete: bool,
+    pub id: i64,
+    pub name: String,
+    pub remark: String,
+    pub update_time: DateTime<Utc>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub update_by: i64,
+    pub is_delete: bool,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
@@ -26,37 +26,37 @@ pub struct Group {
 #[diesel(table_name = crate::schema::groups_permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct GroupsPermission {
-  pub group_id: i64,
-  pub permission_id: i64,
+    pub group_id: i64,
+    pub permission_id: i64,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Clone, Eq, PartialEq, Hash, Selectable)]
 #[diesel(table_name = crate::schema::permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Permission {
-  pub id: i64,
-  pub name: String,
-  pub remark: String,
-  pub update_time: DateTime<Utc>,
-  pub create_time: DateTime<Utc>,
-  pub create_by: i64,
-  pub update_by: i64,
-  pub is_delete: bool,
+    pub id: i64,
+    pub name: String,
+    pub remark: String,
+    pub update_time: DateTime<Utc>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub update_by: i64,
+    pub is_delete: bool,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Clone, Serialize, Deserialize, Selectable)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-  pub id: i64,
-  pub username: String,
-  pub password: String,
-  pub group_id: i64,
-  pub tenantry: String,
-  pub remark: String,
-  pub update_time: DateTime<Utc>,
-  pub create_time: DateTime<Utc>,
-  pub create_by: i64,
-  pub update_by: i64,
-  pub is_delete: bool,
+    pub id: i64,
+    pub username: String,
+    pub password: String,
+    pub group_id: i64,
+    pub tenantry: String,
+    pub remark: String,
+    pub update_time: DateTime<Utc>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub update_by: i64,
+    pub is_delete: bool,
 }

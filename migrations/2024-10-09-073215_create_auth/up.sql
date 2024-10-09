@@ -40,7 +40,9 @@ CREATE TABLE "users"
     "is_delete"   BOOL      NOT NULL,
     FOREIGN KEY ("group_id") REFERENCES "groups" ("id")
 );
-
+alter table users
+    add constraint uni_name
+        unique (username);
 
 CREATE TABLE "groups_permissions"
 (
@@ -48,3 +50,4 @@ CREATE TABLE "groups_permissions"
     "permission_id" INT8 NOT NULL,
     PRIMARY KEY ("group_id", "permission_id")
 );
+

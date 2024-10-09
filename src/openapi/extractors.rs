@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::openapi::errors::AppError;
 
-#[derive(FromRequest, OperationIo,JsonSchema)]
+#[derive(FromRequest, OperationIo, JsonSchema)]
 #[from_request(via(axum_jsonschema::Json), rejection(AppError))]
 #[aide(
     input_with = "axum_jsonschema::Json<T>",
@@ -23,4 +23,3 @@ where
         axum::Json(self.0).into_response()
     }
 }
-

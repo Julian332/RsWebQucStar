@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
+use std::error::Error;
+use std::fmt::{Display, Error, Formatter};
 
-use alloy::primitives::private::derive_more::Error;
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_jsonschema::JsonSchemaRejection;
 use schemars::JsonSchema;
@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 use uuid::Uuid;
 
 /// A default error response for most API errors.
-#[derive(Debug, Serialize, JsonSchema,Error)]
+#[derive(Debug, Serialize, JsonSchema)]
 pub struct AppError {
     /// An error message.
     pub error: String,
@@ -24,10 +24,11 @@ pub struct AppError {
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "(+error:{}, +error_id:{})", self.error, self.error_id)  
+        write!(f, "(+error:{}, +error_id:{})", self.error, self.error_id)
     }
 }
 
+impl Error for AppError {}
 
 impl AppError {
     pub fn new(error: &str) -> Self {
@@ -66,6 +67,39 @@ impl From<JsonSchemaRejection> for AppError {
             JsonSchemaRejection::Schema(s) => {
                 Self::new("invalid request").with_details(json!({ "schema_validation": s }))
             }
+        }
+    }
+}
+
+impl From<Box<dyn Error>> for AppError {
+    fn from(value: Box<dyn Error>) -> Self {
+        AppError {
+            error: format!("{}", value),
+            error_id: Default::default(),
+            status: Default::default(),
+            error_details: None,
+        }
+    }
+}
+
+impl From<Box<dyn Display>> for AppError {
+    fn from(value: Box<dyn Display>) -> Self {
+        AppError {
+            error: format!("{}", value),
+            error_id: Default::default(),
+            status: Default::default(),
+            error_details: None,
+        }
+    }
+}
+
+impl From<diesel::result::Error> for AppError {
+    fn from(value: diesel::result::Error) -> Self {
+        AppError {
+            error: format!("{}", value),
+            error_id: Default::default(),
+            status: Default::default(),
+            error_details: None,
         }
     }
 }
