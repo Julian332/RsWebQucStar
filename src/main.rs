@@ -47,11 +47,11 @@ async fn main() {
 
     let app = ApiRouter::new()
         // .nest_api_service("/tg_users", controller::tg_user::web_routes(connection_pool.clone()))
-        // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)
         .layer(Extension(Arc::new(api)))
         .fallback(fallback)
+        .layer(auth_layer)
         .with_state(connection_pool.clone());
 
     // run our app with hyper, listening globally on port 3000

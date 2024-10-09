@@ -117,6 +117,7 @@ impl AuthzBackend for AuthBackend {
             .inner_join(groups::table())
             .inner_join(groups_permissions.on(group_id.eq(crate::schema::groups::id)))
             .inner_join(permissions.on(permission_id.eq(crate::schema::permissions::id)))
+            .filter(crate::schema::users::id.eq(user.id))
             .load::<(User, Group, GroupsPermission, Permission)>(&mut self.db.get().expect(""))
         {
             Ok(res) => Ok(res.into_iter().map(|x| x.3).collect()),
