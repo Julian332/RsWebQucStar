@@ -3,138 +3,60 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-use crate::domain::param_models::{OrderType, SellBuy};
-use bigdecimal::BigDecimal;
-use chrono::offset::Utc;
-use chrono::DateTime;
-use diesel::pg::Pg;
-use diesel::prelude::*;
-use diesel::serialize::ToSql;
-use diesel::Queryable;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
+use chrono::{DateTime, Utc} ;
+use diesel::{Identifiable, Queryable};
 
-#[derive(Debug)]
-#[derive(Queryable)]
-#[diesel(table_name = crate::schema::following_order)]
+#[derive(Queryable, Debug, Identifiable)]
+#[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct FollowingOrder {
+pub struct Group {
   pub id: i64,
-  pub deleted: bool,
+  pub name: String,
+  pub remark: String,
+  pub update_time: DateTime<Utc>,
   pub create_time: DateTime<Utc>,
-  pub update_time: Option<DateTime<Utc>>,
+  pub create_by: i64,
+  pub update_by: i64,
+  pub is_delete: bool,
 }
 
-
-#[derive(
-  Queryable,
-  Debug,
-  Serialize,
-  Deserialize,
-  Default,
-  JsonSchema,
-  Selectable,
-  Identifiable,
-  AsChangeset,
-  Clone
-)]
-#[diesel(table_name = crate::schema::addr_subscribes)]
+#[derive(Queryable, Debug, Identifiable)]
+#[diesel(primary_key(group_id, permission_id))]
+#[diesel(table_name = crate::schema::groups_permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct AddrSubscribes {
+pub struct GroupsPermission {
+  pub group_id: i64,
+  pub permission_id: i64,
+}
+
+#[derive(Queryable, Debug)]
+#[diesel(table_name = crate::schema::permissions)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Permission {
   pub id: i64,
-  pub deleted: bool,
+  pub name: String,
+  pub remark: String,
+  pub update_time: DateTime<Utc>,
   pub create_time: DateTime<Utc>,
-  pub update_time: Option<DateTime<Utc>>,
-  pub following_addr: String,
-  pub subscribers: Option<Vec<Option<String>>>,
+  pub create_by: i64,
+  pub update_by: i64,
+  pub is_delete: bool,
 }
 
-
-#[derive(
-  Queryable,
-  Debug,
-  Serialize,
-  Deserialize,
-  Default,
-  JsonSchema,
-  Selectable,
-  Identifiable,
-  AsChangeset,
-  Clone
-)]
-#[diesel(table_name = crate::schema::tg_user)]
+#[derive(Queryable, Debug)]
+#[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct TgUser {
+pub struct User {
   pub id: i64,
-  pub deleted: bool,
-  // #[serde(with = "chrono_datetime_as_bson_datetime")]
+  pub username: String,
+  pub password: String,
+  pub group_id: i64,
+  pub tenantry: String,
+  pub remark: String,
+  pub update_time: DateTime<Utc>,
   pub create_time: DateTime<Utc>,
-  pub update_time: Option<DateTime<Utc>>,
-  pub address: String,
-  pub private_key: Option<String>,
-  pub fee_staged: Option<BigDecimal>,
-  pub fee_received: Option<BigDecimal>,
-  pub parent: Option<String>,
+  pub create_by: i64,
+  pub update_by: i64,
+  pub is_delete: bool,
 }
-
-#[derive(
-  Queryable,
-  Debug,
-  Serialize,
-  Deserialize,
-  Default,
-  JsonSchema,
-  Insertable,
-  Selectable,
-  AsChangeset
-)]
-#[diesel(table_name = crate::schema::tg_user)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct NewTgUser {
-  pub address: String,
-  pub private_key: Option<String>,
-  pub parent: Option<String>,
-}
-
-#[derive(
-  Queryable,
-  Debug,
-  Serialize,
-  Deserialize,
-  JsonSchema,
-  Insertable,
-  Selectable,
-  Identifiable,
-  AsChangeset
-)]
-#[diesel(table_name = crate::schema::trading_order)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct TradingOrder {
-  pub id: i64,
-  pub deleted: bool,
-  pub create_time: DateTime<Utc>,
-  pub update_time: Option<DateTime<Utc>>,
-  pub sell_or_buy: SellBuy,
-  pub target_token: String,
-  pub from_token: String,
-  pub trading_uer: i64,
-  pub boost_mode: bool,
-  pub mev_protected: bool,
-  pub priority_fee: Option<BigDecimal>,
-  pub is_succeed: Option<bool>,
-  pub tx_hash: Option<String>,
-  pub tx_receipt: Option<serde_json::Value>,
-  pub target_amount: Option<BigDecimal>,
-  pub from_token_amount: BigDecimal,
-  pub pending_target_price: Option<BigDecimal>,
-  pub expire_at: Option<DateTime<Utc>>,
-  pub fee: Option<BigDecimal>,
-  pub order_type: OrderType,
-  pub slippage: Option<BigDecimal>,
-  pub user_addr: String,
-}
-
-
-
-

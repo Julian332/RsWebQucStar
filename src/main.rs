@@ -11,7 +11,6 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use serde::{Deserialize, Serialize};
 
-use crate::controller::analysis::listen_and_send;
 use crate::openapi::{api_docs, fallback};
 use openapi::docs::docs_routes;
 use crate::api_auth::Backend;
@@ -51,9 +50,7 @@ async fn main() {
 
 
   let app = ApiRouter::new()
-    .nest_api_service("/tg_users", controller::tg_user::web_routes(connection_pool.clone()))
-    .nest_api_service("/analysis", controller::analysis::analysis_routes(connection_pool.clone()))
-    .nest_api_service("/trading_order", controller::trading_order::trading_order_routes(connection_pool.clone()))
+    // .nest_api_service("/tg_users", controller::tg_user::web_routes(connection_pool.clone()))
     // .nest_api_service("/trading_order", trading_order_routes(connection_pool.clone()))
     .nest_api_service("/docs", docs_routes())
 
@@ -61,7 +58,6 @@ async fn main() {
     .layer(Extension(Arc::new(api)))
     .fallback(fallback)
     .with_state(connection_pool.clone());
-  tokio::spawn(listen_and_send(connection_pool.clone()));
 
   // run our app with hyper, listening globally on port 3000
   let listener = tokio::net::TcpListener::bind(

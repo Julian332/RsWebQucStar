@@ -7,9 +7,6 @@ use diesel::{Identifiable, Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-pub mod tg_user;
-pub mod trading_order;
-pub mod analysis;
 
 #[derive(
   Debug,
