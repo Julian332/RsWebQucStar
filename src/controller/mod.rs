@@ -1,4 +1,3 @@
-use crate::models::{NewTgUser, TgUser};
 use aide::axum::routing::delete_with;
 use axum::extract::State;
 use axum::Json;

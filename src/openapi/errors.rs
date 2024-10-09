@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::fmt::{Display, Error, Formatter};
+use std::fmt::{Display, Formatter};
 
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_jsonschema::JsonSchemaRejection;

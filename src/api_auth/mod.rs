@@ -1,9 +1,14 @@
-use crate::models::{Permission, User};
+use crate::models::{Group, GroupsPermission, Permission, User};
 use crate::openapi::errors::AppError;
+use crate::schema::groups::dsl::groups;
+use crate::schema::groups_permissions::dsl::groups_permissions;
+use crate::schema::groups_permissions::{group_id, permission_id};
+use crate::schema::permissions::dsl::permissions;
 use crate::schema::users::dsl::users;
 use crate::schema::users::username;
 use axum::async_trait;
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend, UserId};
+use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
@@ -24,13 +29,13 @@ pub struct Credentials {
     pub next: Option<String>,
 }
 
-impl From<&str> for Permission {
-    fn from(name: &str) -> Self {
-        Permission {
-            name: name.to_string(),
-        }
-    }
-}
+// impl From<&str> for Permission {
+//     fn from(name: &str) -> Self {
+//         Permission {
+//             name: name.to_string(),
+//         }
+//     }
+// }
 impl AuthUser for User {
     type Id = i64;
 
@@ -108,20 +113,14 @@ impl AuthzBackend for AuthBackend {
         &self,
         user: &Self::User,
     ) -> Result<HashSet<Self::Permission>, Self::Error> {
-        // let permissions: Vec<Self::Permission> = sqlx::query_as(
-        //     r#"
-        //     select distinct permissions.name
-        //     from users
-        //     join users_groups on users.id = users_groups.user_id
-        //     join groups_permissions on users_groups.group_id = groups_permissions.group_id
-        //     join permissions on groups_permissions.permission_id = permissions.id
-        //     where users.id = ?
-        //     "#,
-        // )
-        // .bind(user.id)
-        // .fetch_all(&self.db)
-        // .await?;
-
-        Ok(permissions.into_iter().collect())
+        match users
+            .inner_join(groups::table())
+            .inner_join(groups_permissions.on(group_id.eq(crate::schema::groups::id)))
+            .inner_join(permissions.on(permission_id.eq(crate::schema::permissions::id)))
+            .load::<(User, Group, GroupsPermission, Permission)>(&mut self.db.get().expect(""))
+        {
+            Ok(res) => Ok(res.into_iter().map(|x| x.3).collect()),
+            Err(e) => Err(e.into()),
+        }
     }
 }
