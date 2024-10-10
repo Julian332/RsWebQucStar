@@ -35,17 +35,3 @@ pub async fn login(
         Redirect::to("/").into_response()
     }
 }
-// pub async fn login2(
-//     mut auth_session: AuthSession<AuthBackend>,
-//     Json(creds): Json<Credentials>,
-// ) -> AppError {
-//     AppError {
-//         error: "".to_string(),
-//         error_id: Default::default(),
-//         status: Default::default(),
-//         error_details: None,
-//     }
-// }
-// async fn simulate_swap() -> Result<Json<u128>, String> {
-//     Err("asa".to_string())
-// }
