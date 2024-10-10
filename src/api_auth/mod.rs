@@ -127,3 +127,8 @@ impl AuthzBackend for AuthBackend {
         }
     }
 }
+
+#[test]
+pub fn test() {
+    println!("{}", password_auth::generate_hash("1234qwerty"));
+}
