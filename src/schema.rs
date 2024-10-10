@@ -1,13 +1,31 @@
 // @generated automatically by Diesel CLI.
-pub mod sql_types {
-    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "order_type"))]
-    pub struct OrderType;
 
-    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "sell_buy"))]
-    pub struct SellBuy;
+diesel::table! {
+    auction (id) {
+        token_addr -> Text,
+        name -> Text,
+        symbol -> Text,
+        once_amount -> Int8,
+        total_supply -> Numeric,
+        total_eth -> Numeric,
+        start_time -> Timestamptz,
+        publish_time -> Timestamptz,
+        is_burn_lp_token -> Bool,
+        creator_addr -> Text,
+        creator_id -> Text,
+        transaction_hash -> Text,
+        description -> Text,
+        image -> Text,
+        id -> Int8,
+        remark -> Nullable<Text>,
+        update_time -> Nullable<Timestamptz>,
+        create_time -> Timestamptz,
+        create_by -> Int8,
+        update_by -> Nullable<Int8>,
+        is_delete -> Bool,
+    }
 }
+
 diesel::table! {
     groups (id) {
         id -> Int8,
@@ -57,8 +75,14 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(users -> groups (group_id));
 diesel::joinable!(groups_permissions -> groups (group_id));
 diesel::joinable!(groups_permissions -> permissions (permission_id));
+diesel::joinable!(users -> groups (group_id));
 
-diesel::allow_tables_to_appear_in_same_query!(groups, groups_permissions, permissions, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    auction,
+    groups,
+    groups_permissions,
+    permissions,
+    users,
+);

@@ -1,4 +1,4 @@
-use crate::api_auth::login_strategy::{AuthBackend, Credentials};
+use crate::api_auth::login_impl::{AuthBackend, Credentials};
 use crate::models::User;
 use crate::openapi::default_resp_docs_with_exam;
 use crate::openapi::extractors::Json;
@@ -32,6 +32,6 @@ pub async fn login(
     if let Some(ref next) = creds.next {
         Redirect::to(next).into_response()
     } else {
-        Redirect::to("/").into_response()
+        StatusCode::OK.into_response()
     }
 }

@@ -3,8 +3,9 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
+use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
-use diesel::{Identifiable, Queryable, Selectable};
+use diesel::{AsChangeset, Identifiable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -45,7 +46,7 @@ pub struct Permission {
     pub is_delete: bool,
 }
 
-#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default)]
+#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default,AsChangeset)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -54,6 +55,33 @@ pub struct User {
     pub password: String,
     pub group_id: i64,
     pub tenantry: String,
+    pub remark: Option<String>,
+    pub update_time: Option<DateTime<Utc>>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub update_by: Option<i64>,
+    pub is_delete: bool,
+}
+
+#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default,AsChangeset)]
+#[diesel(table_name = crate::schema::auction)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Auction {
+    pub token_addr: String,
+    pub name: String,
+    pub symbol: String,
+    pub once_amount: i64,
+    pub total_supply: BigDecimal,
+    pub total_eth: BigDecimal,
+    pub start_time: DateTime<Utc>,
+    pub publish_time: DateTime<Utc>,
+    pub is_burn_lp_token: bool,
+    pub creator_addr: String,
+    pub creator_id: String,
+    pub transaction_hash: String,
+    pub description: String,
+    pub image: String,
+    pub id: i64,
     pub remark: Option<String>,
     pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,

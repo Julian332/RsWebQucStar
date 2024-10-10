@@ -1,4 +1,4 @@
-pub mod login_strategy;
+pub mod login_impl;
 pub(crate) mod router;
 
 #[test]

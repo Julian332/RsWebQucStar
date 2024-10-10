@@ -10,7 +10,7 @@ use axum_login::AuthManagerLayerBuilder;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 
-use crate::api_auth::login_strategy::AuthBackend;
+use crate::api_auth::login_impl::AuthBackend;
 use crate::openapi::{api_docs, fallback};
 use openapi::docs::docs_routes;
 
@@ -45,7 +45,8 @@ async fn main() {
     let mut api = OpenApi::default();
 
     let app = ApiRouter::new()
-        // .nest_api_service("/tg_users", controller::tg_user::web_routes(connection_pool.clone()))
+        .nest_api_service("/users", controller::user::web_routes(connection_pool.clone()))
+        .nest_api_service("/auctions", controller::auction::web_routes(connection_pool.clone()))
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)
         .layer(Extension(Arc::new(api)))

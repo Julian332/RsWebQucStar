@@ -1,3 +1,6 @@
+pub mod user;
+pub mod auction;
+
 use diesel::r2d2::Pool;
 use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
@@ -5,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
-    model: T,
+    model: Option<T>,
     page_no: i64,
     page_size: i64,
 }
@@ -71,7 +74,7 @@ macro_rules! web_fn_gen {
             Json(new): Json<$new>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = diesel::update(tg_user.find(id_param))
+            let result = diesel::update($table.find(id_param))
                 .set(&new)
                 .returning($result::as_returning())
                 .get_result(&mut connection)
@@ -84,7 +87,7 @@ macro_rules! web_fn_gen {
             Path(id_param): Path<i64>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = tg_user
+            let result = $table
                 .find(id_param)
                 .select($result::as_select())
                 .get_result(&mut connection)
@@ -97,8 +100,8 @@ macro_rules! web_fn_gen {
             Path(id_param): Path<i64>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = diesel::update(tg_user.find(id_param))
-                .set(crate::schema::$table::deleted.eq(true))
+            let result = diesel::update($table.find(id_param))
+                .set(crate::schema::$table::is_delete.eq(true))
                 .returning($result::as_returning())
                 .get_result(&mut connection)
                 .expect("Error delete  entity");
@@ -139,6 +142,8 @@ macro_rules! web_router_gen {
             ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl,
             SelectableHelper,
         };
+        use crate::schema::$table::dsl::$table;
+
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
                 .api_route(
