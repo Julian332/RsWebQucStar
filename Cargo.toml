@@ -8,9 +8,9 @@ axum = { version = "^0.7.0",features = ["macros"] }
 axum-extra = "0.9.3"
 axum-jsonschema = { version = "0.8.0" ,features = ["aide"]}
 axum-macros = "0.4.1"
-axum-login = "0.15.3"
+axum-login = { path = "axum-login" }
 
-aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros", ] }
+aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros","axum-headers" ] }
 
 diesel = { version = "2.2.2", features = ["postgres", "extras",] }
 

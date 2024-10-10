@@ -100,11 +100,11 @@ VALUES (2, 4);
 INSERT INTO users (id, username, password, group_id, tenantry, remark, update_time, create_time, create_by, update_by,
                    is_delete)
 VALUES (1, 'common_user',
-        '$argon2id$v=19$m=19456,t=2,p=1$45Pe1X0xF8Oittc4KxcTgg$KYZ/XV1QAQtqw13pSPKqtwNAYn6qUHClku+nEz49194', 1,
+        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', 1,
         'default', null, null, now(), -1, null, false);
 
 INSERT INTO users (id, username, password, group_id, tenantry, remark, update_time, create_time, create_by, update_by,
                    is_delete)
 VALUES (2, 'super_admin',
-        '$argon2id$v=19$m=19456,t=2,p=1$45Pe1X0xF8Oittc4KxcTgg$KYZ/XV1QAQtqw13pSPKqtwNAYn6qUHClku+nEz49194', 2,
+        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', 2,
         'default', null, null, now(), -1, null, false)

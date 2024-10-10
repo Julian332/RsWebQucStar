@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::str::FromStr;
 
 use alloy::network::{Ethereum, EthereumWallet, TransactionBuilder};
 use alloy::primitives::{Address, TxHash, U256};

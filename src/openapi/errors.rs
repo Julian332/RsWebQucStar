@@ -1,15 +1,15 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
-
+use aide::OperationIo;
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_jsonschema::JsonSchemaRejection;
 use schemars::JsonSchema;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 
 /// A default error response for most API errors.
-#[derive(Debug, Serialize, JsonSchema)]
+#[derive(Debug, Serialize, JsonSchema, Deserialize, OperationIo)]
 pub struct AppError {
     /// An error message.
     pub error: String,

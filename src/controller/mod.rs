@@ -1,8 +1,5 @@
-use aide::axum::routing::delete_with;
-use axum::extract::State;
-use axum::Json;
-use diesel::r2d2::{ConnectionManager, Pool};
-use diesel::{Identifiable, Insertable, PgConnection, Queryable, Selectable};
+use diesel::r2d2::Pool;
+use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

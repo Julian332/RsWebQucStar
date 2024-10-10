@@ -9,9 +9,8 @@ use axum_login::tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
-use serde::{Deserialize, Serialize};
 
-use crate::api_auth::AuthBackend;
+use crate::api_auth::login_strategy::AuthBackend;
 use crate::openapi::{api_docs, fallback};
 use openapi::docs::docs_routes;
 
@@ -51,8 +50,9 @@ async fn main() {
         .finish_api_with(&mut api, api_docs)
         .layer(Extension(Arc::new(api)))
         .fallback(fallback)
-        .layer(auth_layer)
-        .with_state(connection_pool.clone());
+        .with_state(connection_pool.clone())
+        .merge(api_auth::router::router())
+        .layer(auth_layer);
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(format!(

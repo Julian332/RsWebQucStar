@@ -5,6 +5,7 @@
 
 use chrono::{DateTime, Utc};
 use diesel::{Identifiable, Queryable, Selectable};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Debug, Identifiable, Selectable)]
@@ -44,7 +45,7 @@ pub struct Permission {
     pub is_delete: bool,
 }
 
-#[derive(Queryable, Clone, Serialize, Deserialize, Selectable)]
+#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
