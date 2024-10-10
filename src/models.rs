@@ -7,21 +7,21 @@ use chrono::{DateTime, Utc};
 use diesel::{Identifiable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug, Identifiable)]
+#[derive(Queryable, Debug, Identifiable, Selectable)]
 #[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Group {
     pub id: i64,
     pub name: String,
-    pub remark: String,
-    pub update_time: DateTime<Utc>,
+    pub remark: Option<String>,
+    pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,
     pub create_by: i64,
-    pub update_by: i64,
+    pub update_by: Option<i64>,
     pub is_delete: bool,
 }
 
-#[derive(Queryable, Debug, Identifiable)]
+#[derive(Queryable, Debug, Identifiable, Selectable)]
 #[diesel(primary_key(group_id, permission_id))]
 #[diesel(table_name = crate::schema::groups_permissions)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -36,11 +36,11 @@ pub struct GroupsPermission {
 pub struct Permission {
     pub id: i64,
     pub name: String,
-    pub remark: String,
-    pub update_time: DateTime<Utc>,
+    pub remark: Option<String>,
+    pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,
     pub create_by: i64,
-    pub update_by: i64,
+    pub update_by: Option<i64>,
     pub is_delete: bool,
 }
 
@@ -53,10 +53,10 @@ pub struct User {
     pub password: String,
     pub group_id: i64,
     pub tenantry: String,
-    pub remark: String,
-    pub update_time: DateTime<Utc>,
+    pub remark: Option<String>,
+    pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,
     pub create_by: i64,
-    pub update_by: i64,
+    pub update_by: Option<i64>,
     pub is_delete: bool,
 }

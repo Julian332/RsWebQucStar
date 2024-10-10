@@ -1,4 +1,4 @@
-use crate::models::{Group, GroupsPermission, Permission, User};
+use crate::models::{Permission, User};
 use crate::openapi::errors::AppError;
 use crate::schema::groups::dsl::groups;
 use crate::schema::groups_permissions::dsl::groups_permissions;
@@ -113,14 +113,16 @@ impl AuthzBackend for AuthBackend {
         &self,
         user: &Self::User,
     ) -> Result<HashSet<Self::Permission>, Self::Error> {
+        let conn = &mut self.db.get().expect("cannot get db");
         match users
             .inner_join(groups::table())
             .inner_join(groups_permissions.on(group_id.eq(crate::schema::groups::id)))
             .inner_join(permissions.on(permission_id.eq(crate::schema::permissions::id)))
             .filter(crate::schema::users::id.eq(user.id))
-            .load::<(User, Group, GroupsPermission, Permission)>(&mut self.db.get().expect(""))
+            .select(Permission::as_select())
+            .load(conn)
         {
-            Ok(res) => Ok(res.into_iter().map(|x| x.3).collect()),
+            Ok(res) => Ok(res.into_iter().collect()),
             Err(e) => Err(e.into()),
         }
     }

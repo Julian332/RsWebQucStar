@@ -51,3 +51,13 @@ CREATE TABLE "groups_permissions"
     PRIMARY KEY ("group_id", "permission_id")
 );
 
+alter table public.groups_permissions
+    add constraint groups_permissions_groups_id_fk
+        foreign key (group_id) references public.groups;
+
+alter table public.groups_permissions
+    add constraint groups_permissions_permissions_id_fk
+        foreign key (permission_id) references public.permissions;
+
+CREATE TYPE order_type AS ENUM ('trading', 'pending', 'following');
+CREATE TYPE sell_buy AS ENUM ('sell', 'buy');
