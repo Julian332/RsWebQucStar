@@ -1,3 +1,5 @@
+mod user;
+
 use diesel::r2d2::Pool;
 use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
@@ -71,7 +73,7 @@ macro_rules! web_fn_gen {
             Json(new): Json<$new>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = diesel::update(tg_user.find(id_param))
+            let result = diesel::update($table.find(id_param))
                 .set(&new)
                 .returning($result::as_returning())
                 .get_result(&mut connection)
@@ -84,7 +86,7 @@ macro_rules! web_fn_gen {
             Path(id_param): Path<i64>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = tg_user
+            let result = $table
                 .find(id_param)
                 .select($result::as_select())
                 .get_result(&mut connection)
@@ -97,8 +99,8 @@ macro_rules! web_fn_gen {
             Path(id_param): Path<i64>,
         ) -> Result<Json<$result>, String> {
             let mut connection = pool.get().unwrap();
-            let result = diesel::update(tg_user.find(id_param))
-                .set(crate::schema::$table::deleted.eq(true))
+            let result = diesel::update($table.find(id_param))
+                .set(crate::schema::$table::is_delete.eq(true))
                 .returning($result::as_returning())
                 .get_result(&mut connection)
                 .expect("Error delete  entity");
@@ -128,17 +130,15 @@ macro_rules! web_router_gen {
     ($table:ident ,$new:ident, $result:ident) => {
         use crate::controller::{PageParam, PageRes};
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
+        use crate::schema::users::dsl::$table;
         use crate::web_fn_gen;
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
-        use alloy::primitives::Address;
         use axum::extract::{Path, State};
         use axum::response::Json;
-        use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-        use diesel::{
-            ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl,
-            SelectableHelper,
-        };
+        use diesel::r2d2::{ConnectionManager, Pool};
+        use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
                 .api_route(

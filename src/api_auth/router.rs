@@ -32,6 +32,6 @@ pub async fn login(
     if let Some(ref next) = creds.next {
         Redirect::to(next).into_response()
     } else {
-        Redirect::to("/").into_response()
+        StatusCode::OK.into_response()
     }
 }
