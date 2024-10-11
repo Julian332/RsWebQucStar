@@ -45,8 +45,15 @@ async fn main() {
     let mut api = OpenApi::default();
 
     let app = ApiRouter::new()
-        .nest_api_service("/users", controller::user::web_routes(connection_pool.clone()))
-        .nest_api_service("/auctions", controller::auction::web_routes(connection_pool.clone()))
+        .nest_api_service("/auth", api_auth::router::router())
+        .nest_api_service(
+            "/users",
+            controller::user::web_routes(connection_pool.clone()),
+        )
+        .nest_api_service(
+            "/auctions",
+            controller::auction::web_routes(connection_pool.clone()),
+        )
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)
         .layer(Extension(Arc::new(api)))

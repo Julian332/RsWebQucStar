@@ -1,4 +1,4 @@
-use crate::controller::{PageParam, PageRes};
+use crate::controller::{PageParam, PageRes, LOGIN_URL};
 use crate::models::Auction;
 use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
 use crate::schema::auction::dsl::auction;
@@ -93,7 +93,7 @@ pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> Ap
             ),
         )
         .with_state(conn_pool)
-        .route_layer(login_required!(AuthBackend, login_url = "/login"))
+        .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))
 }
 async fn create_entity(
     State(pool): State<Pool<ConnectionManager<PgConnection>>>,

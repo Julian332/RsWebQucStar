@@ -6,6 +6,7 @@ use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+const LOGIN_URL: &str = "/auth/login";
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
     model: Option<T>,
