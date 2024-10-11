@@ -23,6 +23,9 @@ diesel::table! {
         create_by -> Int8,
         update_by -> Nullable<Int8>,
         is_delete -> Bool,
+        is_published -> Bool,
+        published_price_in_wei -> Nullable<Numeric>,
+        latest_price_in_wei -> Nullable<Numeric>,
     }
 }
 

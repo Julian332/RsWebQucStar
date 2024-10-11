@@ -46,7 +46,7 @@ pub struct Permission {
     pub is_delete: bool,
 }
 
-#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default,AsChangeset)]
+#[derive(Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default,AsChangeset,Debug)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -88,4 +88,7 @@ pub struct Auction {
     pub create_by: i64,
     pub update_by: Option<i64>,
     pub is_delete: bool,
+    pub is_published: bool,
+    pub published_price_in_wei: Option<BigDecimal>,
+    pub latest_price_in_wei: Option<BigDecimal>,
 }

@@ -34,6 +34,18 @@ pub struct NewUser {
     pub group_id: i64,
     pub tenantry: String,
     pub remark: Option<String>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub is_delete: bool,
+}
+
+#[derive(Serialize,Deserialize,JsonSchema)]
+pub struct NewUserParam {
+    pub username: String,
+    pub password: String,
+    pub group_id: i64,
+    pub tenantry: String,
+    pub remark: Option<String>,
     pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,
     pub create_by: i64,
@@ -64,7 +76,6 @@ pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> Ap
             ),
         )
         .with_state(conn_pool)
-        .route_layer(login_required!(AuthBackend, login_url = "/login"))
 }
 async fn create_entity(
     State(pool): State<Pool<ConnectionManager<PgConnection>>>,

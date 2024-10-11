@@ -3,20 +3,23 @@ name = "pre_sale_slot"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+wallet_auth = []
+
 [dependencies]
-axum = { version = "^0.7.0",features = ["macros"] }
+axum = { version = "^0.7.0", features = ["macros"] }
 axum-extra = "0.9.3"
-axum-jsonschema = { version = "0.8.0" ,features = ["aide"]}
+axum-jsonschema = { version = "0.8.0", features = ["aide"] }
 axum-macros = "0.4.1"
 axum-login = { path = "axum-login" }
 
-aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros","axum-headers" ] }
+aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros", "axum-headers"] }
 
-diesel = { version = "2.2.2", features = ["postgres", "extras",] }
+diesel = { version = "2.2.2", features = ["postgres", "extras", ] }
 
 dotenvy = "0.15.7"
 
-serde = { version = "1.0.204", features = ["derive" , "rc"] }
+serde = { version = "1.0.204", features = ["derive", "rc"] }
 serde_json = "1.0.121"
 
 tokio = { version = "1.39.2", features = ["full"] }
@@ -25,9 +28,9 @@ bigdecimal = { version = "0.4.5", features = ["serde-json"] }
 chrono = { version = "0.4.15", features = ["serde"] }
 #bson = { version = "2.11.0", features = ["chrono-0_4"] }
 #alloy-primitives = { version = "0.7.7", features = ["serde", "postgres"] }
-alloy = { version = "0.4.2",features = ["full"]}
-schemars = { version = "0.8.21" ,features =["uuid1","chrono","bigdecimal04"]}
-uuid = { version = "1.10.0", features = ["serde", "v4"]}
+alloy = { version = "0.4.2", features = ["full"] }
+schemars = { version = "0.8.21", features = ["uuid1", "chrono", "bigdecimal04"] }
+uuid = { version = "1.10.0", features = ["serde", "v4"] }
 hmac = { version = "0.12.1" }
 base64 = "0.22.1"
 sha2 = "0.10.8"
