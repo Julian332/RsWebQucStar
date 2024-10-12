@@ -5,6 +5,7 @@
 
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
+use derive_builder::Builder;
 use diesel::{AsChangeset, Identifiable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -47,10 +48,20 @@ pub struct Permission {
 }
 
 #[derive(
-    Queryable, Clone, Serialize, Deserialize, Selectable, JsonSchema, Default, AsChangeset, Debug,
+    Queryable,
+    Clone,
+    Serialize,
+    Deserialize,
+    Selectable,
+    JsonSchema,
+    Default,
+    AsChangeset,
+    Debug,
+    Builder,
 )]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[builder(derive(Deserialize, Serialize, JsonSchema))]
 pub struct User {
     pub id: i64,
     pub username: String,

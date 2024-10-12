@@ -1,8 +1,7 @@
+mod builder;
 pub mod user;
 
-use crate::schema::users::create_time;
-use diesel::r2d2::Pool;
-use diesel::{Insertable, PgConnection, Queryable, Selectable};
+use diesel::{PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -10,7 +9,7 @@ const LOGIN_URL: &str = "/auth/login";
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
     //todo derive builder
-    model: Option<T>,
+    filters: Option<T>,
     page_no: i64,
     page_size: i64,
     order_column: String,
@@ -18,32 +17,35 @@ pub struct PageParam<T> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
-pub struct PageRes<T> {
+pub struct PageRes<T, TBuilder> {
     page_no: i64,
     page_size: i64,
     records: Vec<T>,
     total_count: i64,
+    filters: Option<TBuilder>,
 }
 
-impl<T> PageRes<T> {
-    pub fn from_param_records(param: PageParam<T>, records: Vec<T>) -> PageRes<T> {
+impl<T, TBuilder> PageRes<T, TBuilder> {
+    pub fn from_param_records(param: PageParam<TBuilder>, records: Vec<T>) -> PageRes<T, TBuilder> {
         PageRes {
             page_no: param.page_no,
             page_size: param.page_size,
             records,
             total_count: -1,
+            filters: param.filters,
         }
     }
     pub fn from_param_records_count(
-        param: PageParam<T>,
+        param: PageParam<TBuilder>,
         records: Vec<T>,
         total_count: i64,
-    ) -> PageRes<T> {
+    ) -> PageRes<T, TBuilder> {
         PageRes {
             page_no: param.page_no,
             page_size: param.page_size,
             records,
             total_count,
+            filters: param.filters,
         }
     }
 }
@@ -56,7 +58,7 @@ impl<T> PageParam<T> {
 
 #[macro_export]
 macro_rules! web_fn_gen {
-    ($table:ident ,$new:ident, $result:ident) => {
+    ($table:ident ,$new:ident, $result:ident, $filter:ident) => {
         async fn create_entity(
             State(pool): State<Pool<ConnectionManager<PgConnection>>>,
             Json(new_entity): Json<$new>,
@@ -114,8 +116,8 @@ macro_rules! web_fn_gen {
 
         async fn get_entity_page(
             State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-            Json(page): Json<PageParam<$result>>,
-        ) -> Result<Json<PageRes<$result>>, String> {
+            Json(page): Json<PageParam<$filter>>,
+        ) -> Result<Json<PageRes<$result, $filter>>, String> {
             let mut connection = pool.get().unwrap();
             let off_lim = page.get_offset_limit();
             let res;
@@ -147,7 +149,7 @@ macro_rules! web_fn_gen {
 
 #[macro_export]
 macro_rules! web_router_gen {
-    ($table:ident ,$new:ident, $result:ident) => {
+    ($table:ident ,$new:ident, $result:ident, $filter:ident) => {
         use crate::api_auth::login_impl::AuthBackend;
         use crate::controller::{PageParam, PageRes, LOGIN_URL};
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
@@ -186,13 +188,13 @@ macro_rules! web_router_gen {
                     "/get_entity_page",
                     post_with(
                         get_entity_page,
-                        default_resp_docs_with_exam::<PageRes<$result>>,
+                        default_resp_docs_with_exam::<PageRes<$result, $filter>>,
                     ),
                 )
                 .with_state(conn_pool)
                 .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))
         }
 
-        web_fn_gen!($table, $new, $result);
+        web_fn_gen!($table, $new, $result, $filter);
     };
 }
