@@ -10,11 +10,12 @@ wallet_auth = []
 [dependencies]
 axum = { version = "^0.7.0", features = ["macros"] }
 axum-extra = "0.9.3"
-axum-jsonschema = { version = "0.8.0", features = ["aide"] }
 axum-macros = "0.4.1"
+
 axum-login = { path = "axum-login" }
 
 aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra", "macros", "axum-headers"] }
+axum-jsonschema = { version = "0.8.0", features = ["aide"] }
 
 diesel = { version = "2.2.2", features = ["postgres", "extras", ] }
 
@@ -42,8 +43,9 @@ eyre = "0.6.12"
 #diesel-enum = { version = "0.2.1" }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 reqwest = "0.12.5"
-futures = "0.3.30"
+futures = "0.3.31"
 
 password-auth = "1.0.0"
+tokio-cron-scheduler = { version = "0.13.0",features = [] }
 [build-dependencies]
 #vergen = { version = "8.0.0", features = ["build", "cargo", "git", "gitcl"] }

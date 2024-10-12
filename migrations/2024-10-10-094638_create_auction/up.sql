@@ -18,7 +18,7 @@ CREATE TABLE "auction"(
 	"transaction_hash" TEXT NOT NULL,
 	"description" TEXT NOT NULL,
 	"image" TEXT NOT NULL,
-	"id" INT8 NOT NULL PRIMARY KEY,
+	"id" SERIAL8 NOT NULL PRIMARY KEY,
 	"remark" TEXT,
 	"update_time" TIMESTAMPTZ,
 	"create_time" TIMESTAMPTZ NOT NULL,

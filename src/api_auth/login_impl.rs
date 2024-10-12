@@ -100,7 +100,6 @@ impl AuthnBackend for AuthBackend {
     }
 
     #[cfg(feature = "wallet_auth")]
-
     async fn authenticate(
         &self,
         creds: Self::Credentials,
@@ -114,7 +113,7 @@ impl AuthnBackend for AuthBackend {
         assert_eq!(recovered_addr, user_addr, "not equal ");
 
         match users
-            .filter(username.eq(creds.user_addr))
+            .filter(username.eq(user_addr.to_string()))
             .select(User::as_select())
             .first(&mut self.db.get().expect("cannot get db"))
             .optional()

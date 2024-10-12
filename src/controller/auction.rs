@@ -2,12 +2,16 @@ use crate::controller::{PageParam, PageRes, LOGIN_URL};
 use crate::models::Auction;
 use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
 use crate::schema::auction::dsl::auction;
+use std::time::SystemTime;
 
+use crate::api_auth::login_impl::AuthBackend;
 use aide::axum::routing::{delete_with, get_with, post_with, put_with};
 use aide::axum::ApiRouter;
+use alloy::hex::FromHex;
+use alloy::primitives::Address;
 use axum::extract::{Path, State};
 use axum::response::Json;
-use axum_login::login_required;
+use axum_login::{login_required, AuthSession};
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
@@ -17,7 +21,6 @@ use diesel::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::api_auth::login_impl::AuthBackend;
 
 #[derive(
     Queryable,
@@ -96,10 +99,32 @@ pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> Ap
         .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))
 }
 async fn create_entity(
+    auth_session: AuthSession<AuthBackend>,
     State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-    Json(new_entity): Json<NewAuction>,
+    Json(new_entity_params): Json<NewAuctionParams>,
 ) -> Result<Json<Auction>, String> {
     let mut connection = pool.get().unwrap();
+    let user = auth_session.user.expect("auth_session.user is none");
+    let new_entity = NewAuction {
+        token_addr: Address::from_hex(new_entity_params.token_addr).expect("wrong token addr").to_string(),
+        name: new_entity_params.name,
+        symbol: new_entity_params.symbol,
+        once_amount: new_entity_params.once_amount,
+        total_supply: new_entity_params.total_supply,
+        total_eth: new_entity_params.total_eth,
+        start_time: new_entity_params.start_time,
+        publish_time: new_entity_params.publish_time,
+        is_burn_lp_token: new_entity_params.is_burn_lp_token,
+        creator_addr: user.username,
+        creator_id: user.id.to_string(),
+        transaction_hash: new_entity_params.transaction_hash,
+        description: new_entity_params.description,
+        image: new_entity_params.image,
+        create_time: SystemTime::now().into(),
+        create_by: user.id,
+        is_delete: false,
+        is_published: false,
+    };
 
     let result = diesel::insert_into(auction)
         .values(new_entity)
