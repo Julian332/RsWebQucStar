@@ -4,21 +4,22 @@ use alloy::providers::fillers::{
     BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller,
     RecommendedFiller, WalletFiller,
 };
-use alloy::providers::{Identity, Provider, ProviderBuilder, ReqwestProvider, RootProvider, WsConnect};
+use alloy::providers::{
+    Identity, Provider, ProviderBuilder, ReqwestProvider, RootProvider, WsConnect,
+};
+use alloy::pubsub::PubSubFrontend;
 use alloy::rpc::types::TransactionRequest;
 use alloy::transports::http::{Client, Http};
 use reqwest::Url;
 use std::env;
 use std::error::Error;
 use std::str::FromStr;
-use alloy::pubsub::PubSubFrontend;
 
-pub mod pre_sale_slot;
+pub mod uni_factory;
 pub mod uni_graph;
 mod uni_graph_params;
-pub mod uni_router2;
-pub mod uni_factory;
 pub mod uni_pair;
+pub mod uni_router2;
 
 pub async fn transfer(
     provider: FillProvider<
@@ -87,5 +88,6 @@ pub async fn readonly_ws_provider() -> RootProvider<PubSubFrontend> {
 }
 
 pub fn weth_addr() -> Address {
-    Address::from_str(env::var("WETH_ADDR").expect(".env WETH_ADDR").as_str()).expect(".env WETH_ADDR")
+    Address::from_str(env::var("WETH_ADDR").expect(".env WETH_ADDR").as_str())
+        .expect(".env WETH_ADDR")
 }

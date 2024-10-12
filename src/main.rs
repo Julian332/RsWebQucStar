@@ -2,7 +2,6 @@ use std::env;
 use std::sync::{Arc, OnceLock};
 
 use crate::api_auth::login_impl::AuthBackend;
-use crate::contract::pre_sale_slot::subscribe_publishing;
 use crate::openapi::{api_docs, fallback};
 use aide::axum::ApiRouter;
 use aide::openapi::OpenApi;
@@ -35,7 +34,6 @@ async fn main() {
 
     let connection_pool = get_connection_pool();
     static_connection_pool.get_or_init(|| connection_pool.clone());
-    tokio::spawn(subscribe_publishing(connection_pool.clone()));
     set_scheduler().await;
     let mut api = OpenApi::default();
 
@@ -44,10 +42,6 @@ async fn main() {
         .nest_api_service(
             "/users",
             controller::user::web_routes(connection_pool.clone()),
-        )
-        .nest_api_service(
-            "/auctions",
-            controller::auction::web_routes(connection_pool.clone()),
         )
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)

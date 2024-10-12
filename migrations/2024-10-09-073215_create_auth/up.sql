@@ -44,7 +44,7 @@ alter table users
     add constraint uni_name
         unique (username);
 
-comment on column users.password is 'password  hash or signature';
+comment on column users.password is 'password  hash or signature hash';
 
 CREATE TABLE "groups_permissions"
 (
@@ -64,49 +64,53 @@ alter table groups_permissions
 CREATE TYPE order_type AS ENUM ('trading', 'pending', 'following');
 CREATE TYPE sell_buy AS ENUM ('sell', 'buy');
 
+
+
+
+
 INSERT INTO groups (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (1, 'common_user', null, null, now(), -1, null, false);
+VALUES (-1, 'common_user', null, null, now(), -2, null, false);
 
 INSERT INTO groups (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (2, 'super_admin', null, null, now(), -1, null, false);
+VALUES (-2, 'super_admin', null, null, now(), -2, null, false);
 
 
 
 INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (1, 'common_read', null, null, now(), -1, null, false);
+VALUES (1, 'common_read', null, null, now(), -2, null, false);
 
 INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (2, 'common_add', null, null, now(), -1, null, false);
+VALUES (2, 'common_add', null, null, now(), -2, null, false);
 
 INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (3, 'common_delete', null, null, now(), -1, null, false);
+VALUES (3, 'common_delete', null, null, now(), -2, null, false);
 
 INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (4, 'common_update', null, null, now(), -1, null, false);
+VALUES (4, 'common_update', null, null, now(), -2, null, false);
 
 
 
 INSERT INTO groups_permissions (group_id, permission_id)
-VALUES (1, 1);
+VALUES (-1, 1);
 INSERT INTO groups_permissions (group_id, permission_id)
-VALUES (2, 1);
+VALUES (-2, 1);
 INSERT INTO groups_permissions (group_id, permission_id)
-VALUES (2, 2);
+VALUES (-2, 2);
 INSERT INTO groups_permissions (group_id, permission_id)
-VALUES (2, 3);
+VALUES (-2, 3);
 INSERT INTO groups_permissions (group_id, permission_id)
-VALUES (2, 4);
+VALUES (-2, 4);
 
 
 
 INSERT INTO users (id, username, password, group_id, tenantry, remark, update_time, create_time, create_by, update_by,
                    is_delete)
-VALUES (1, 'common_user',
-        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', 1,
-        'default', null, null, now(), -1, null, false);
+VALUES (-1, 'common_user',
+        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', -1,
+        'default', null, null, now(), -2, null, false);
 
 INSERT INTO users (id, username, password, group_id, tenantry, remark, update_time, create_time, create_by, update_by,
                    is_delete)
-VALUES (2, 'super_admin',
-        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', 2,
-        'default', null, null, now(), -1, null, false)
+VALUES (-2, 'super_admin',
+        '$argon2id$v=19$m=19456,t=2,p=1$pHJK4Msog1E+V7R4++t+Zg$QnzTOC3JNu50cn0fJcdO5P33WnUUeQRK3oa9M054nko', -2,
+        'default', null, null, now(), -2, null, false)

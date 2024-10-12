@@ -29,6 +29,11 @@ use std::time::SystemTime;
 const LOGIN_MESSAGE: &str = "welcome";
 const DEFAULT_TENANTRY: &str = "default";
 
+const COMMON_USER_ROLE: i64 = -1;
+const COMMON_USER: i64 = -1;
+const SUPER_USER_ROLE: i64 = -2;
+const SUPER_USER: i64 = -2;
+
 #[derive(Debug, Clone)]
 pub struct AuthBackend {
     db: Pool<ConnectionManager<PgConnection>>,
@@ -124,11 +129,11 @@ impl AuthnBackend for AuthBackend {
                     .values(NewUser {
                         username: user_addr.to_string(),
                         password: password_auth::generate_hash(creds.signature),
-                        group_id: 1,
+                        group_id: COMMON_USER_ROLE,
                         tenantry: DEFAULT_TENANTRY.to_string(),
                         remark: None,
                         create_time: SystemTime::now().into(),
-                        create_by: -1,
+                        create_by: SUPER_USER,
                         is_delete: false,
                     })
                     .returning(User::as_select())

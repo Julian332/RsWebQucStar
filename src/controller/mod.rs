@@ -1,5 +1,4 @@
 pub mod user;
-pub mod auction;
 
 use diesel::r2d2::Pool;
 use diesel::{Insertable, PgConnection, Queryable, Selectable};
@@ -132,6 +131,7 @@ macro_rules! web_router_gen {
     ($table:ident ,$new:ident, $result:ident) => {
         use crate::controller::{PageParam, PageRes};
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
+        use crate::schema::$table::dsl::$table;
         use crate::web_fn_gen;
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
@@ -142,7 +142,6 @@ macro_rules! web_router_gen {
             ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl,
             SelectableHelper,
         };
-        use crate::schema::$table::dsl::$table;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
