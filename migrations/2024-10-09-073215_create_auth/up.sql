@@ -44,6 +44,8 @@ alter table users
     add constraint uni_name
         unique (username);
 
+comment on column users.password is 'password  hash or signature';
+
 CREATE TABLE "groups_permissions"
 (
     "group_id"      INT8 NOT NULL,

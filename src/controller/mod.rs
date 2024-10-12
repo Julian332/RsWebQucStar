@@ -1,13 +1,15 @@
-mod user;
+pub mod user;
+pub mod auction;
 
 use diesel::r2d2::Pool;
 use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+const LOGIN_URL: &str = "/auth/login";
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
-    model: T,
+    model: Option<T>,
     page_no: i64,
     page_size: i64,
 }
@@ -130,14 +132,17 @@ macro_rules! web_router_gen {
     ($table:ident ,$new:ident, $result:ident) => {
         use crate::controller::{PageParam, PageRes};
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
-        use crate::schema::users::dsl::$table;
         use crate::web_fn_gen;
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
         use axum::extract::{Path, State};
         use axum::response::Json;
-        use diesel::r2d2::{ConnectionManager, Pool};
-        use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+        use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+        use diesel::{
+            ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl,
+            SelectableHelper,
+        };
+        use crate::schema::$table::dsl::$table;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()

@@ -1,4 +1,4 @@
-use crate::api_auth::login_strategy::AuthBackend;
+use crate::api_auth::login_impl::AuthBackend;
 use crate::controller::{PageParam, PageRes};
 use crate::models::User;
 use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
@@ -29,6 +29,18 @@ use serde::{Deserialize, Serialize};
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser {
+    pub username: String,
+    pub password: String,
+    pub group_id: i64,
+    pub tenantry: String,
+    pub remark: Option<String>,
+    pub create_time: DateTime<Utc>,
+    pub create_by: i64,
+    pub is_delete: bool,
+}
+
+#[derive(Serialize,Deserialize,JsonSchema)]
+pub struct NewUserParam {
     pub username: String,
     pub password: String,
     pub group_id: i64,
