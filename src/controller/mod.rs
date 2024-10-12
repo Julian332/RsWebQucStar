@@ -1,5 +1,6 @@
 pub mod user;
 
+use crate::schema::users::create_time;
 use diesel::r2d2::Pool;
 use diesel::{Insertable, PgConnection, Queryable, Selectable};
 use schemars::JsonSchema;
@@ -8,9 +9,12 @@ use serde::{Deserialize, Serialize};
 const LOGIN_URL: &str = "/auth/login";
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
+    //todo derive builder
     model: Option<T>,
     page_no: i64,
     page_size: i64,
+    order_column: String,
+    is_desc: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
@@ -114,12 +118,27 @@ macro_rules! web_fn_gen {
         ) -> Result<Json<PageRes<$result>>, String> {
             let mut connection = pool.get().unwrap();
             let off_lim = page.get_offset_limit();
-            let res = $table
-                .limit(off_lim.1)
-                .offset(off_lim.0)
-                .select($result::as_select())
-                .load(&mut connection)
-                .expect("Error loading page");
+            let res;
+            let x_table = table(stringify!($table));
+            let order_column = x_table.column::<Text, _>(page.order_column.clone());
+            if page.is_desc {
+                res = $table
+                    .offset(off_lim.0)
+                    .limit(off_lim.1)
+                    .order(order_column.desc())
+                    .select($result::as_select())
+                    .load(&mut connection)
+                    .expect("Error loading page");
+            } else {
+                res = $table
+                    .offset(off_lim.0)
+                    .limit(off_lim.1)
+                    .order(order_column.asc())
+                    .select($result::as_select())
+                    .load(&mut connection)
+                    .expect("Error loading page");
+            }
+
             let page_res = PageRes::from_param_records(page, res);
             Ok(Json(page_res))
         }
@@ -129,7 +148,8 @@ macro_rules! web_fn_gen {
 #[macro_export]
 macro_rules! web_router_gen {
     ($table:ident ,$new:ident, $result:ident) => {
-        use crate::controller::{PageParam, PageRes};
+        use crate::api_auth::login_impl::AuthBackend;
+        use crate::controller::{PageParam, PageRes, LOGIN_URL};
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
         use crate::schema::$table::dsl::$table;
         use crate::web_fn_gen;
@@ -137,11 +157,10 @@ macro_rules! web_router_gen {
         use aide::axum::ApiRouter;
         use axum::extract::{Path, State};
         use axum::response::Json;
-        use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-        use diesel::{
-            ExpressionMethods, OptionalExtension, PgConnection, QueryDsl, RunQueryDsl,
-            SelectableHelper,
-        };
+        use axum_login::login_required;
+        use diesel::r2d2::{ConnectionManager, Pool};
+        use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+        use diesel_dynamic_schema::table;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
@@ -171,6 +190,7 @@ macro_rules! web_router_gen {
                     ),
                 )
                 .with_state(conn_pool)
+                .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))
         }
 
         web_fn_gen!($table, $new, $result);

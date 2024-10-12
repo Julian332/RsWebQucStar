@@ -18,6 +18,7 @@ aide = { version = "0.13.4", features = ["redoc", "scalar", "axum", "axum-extra"
 axum-jsonschema = { version = "0.8.0", features = ["aide"] }
 
 diesel = { version = "2.2.2", features = ["postgres", "extras", ] }
+diesel-dynamic-schema = { version = "0.2.2" ,features = ["postgres"]}
 
 dotenvy = "0.15.7"
 
@@ -47,5 +48,6 @@ futures = "0.3.31"
 
 password-auth = "1.0.0"
 tokio-cron-scheduler = { version = "0.13.0",features = [] }
+derive_builder = "0.20.2"
 [build-dependencies]
 #vergen = { version = "8.0.0", features = ["build", "cargo", "git", "gitcl"] }
