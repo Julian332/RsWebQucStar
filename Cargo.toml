@@ -48,7 +48,7 @@ futures = "0.3.31"
 
 password-auth = "1.0.0"
 tokio-cron-scheduler = { version = "0.13.0",features = [] }
-derive_builder = "0.20.2"
+derive_builder = {path = "derive_macro/derive_builder"}
 #paste = "1.0.15"
 [build-dependencies]
 #vergen = { version = "8.0.0", features = ["build", "cargo", "git", "gitcl"] }
