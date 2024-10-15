@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Eq, Builder)]
+#[derive(Debug, PartialEq, Eq, PageQuery)]
 #[builder(custom_constructor, build_fn(private, name = "fallible_build"))]
 struct Request {
     url: &'static str,

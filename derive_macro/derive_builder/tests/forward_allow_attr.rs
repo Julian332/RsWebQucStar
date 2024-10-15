@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Builder)]
+#[derive(PageQuery)]
 // If this attribute is not forwarded to both the struct and the impl block, there would
 // be a compile error on either the field or the setter method name. Therefore, forwarding
 // is working as-expected if this test compiles.

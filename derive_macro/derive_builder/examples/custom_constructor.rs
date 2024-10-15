@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use derive_builder::Builder;
+use derive_builder::PageQuery;
 
 #[derive(Debug, Clone)]
 pub enum ContentType {
@@ -14,7 +14,7 @@ impl Default for ContentType {
     }
 }
 
-#[derive(Debug, Builder)]
+#[derive(Debug, PageQuery)]
 #[builder(
     custom_constructor,
     create_empty = "empty",

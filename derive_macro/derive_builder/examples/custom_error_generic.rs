@@ -3,7 +3,7 @@
 //! Note the use of the type parameter in the `#[builder(...)]` attribute.
 #![allow(dead_code)]
 
-use derive_builder::{Builder, UninitializedFieldError};
+use derive_builder::{PageQuery, UninitializedFieldError};
 
 trait Popular {
     fn is_popular(&self) -> bool;
@@ -15,7 +15,7 @@ impl<'a> Popular for &'a str {
     }
 }
 
-#[derive(Debug, Builder)]
+#[derive(Debug, PageQuery)]
 #[builder(build_fn(validate = "check_person", error = "Error<N>"))]
 struct Person<N: Popular + Clone> {
     name: N,

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(pattern = "immutable")]
 struct Lorem {
     immutable: u32,
@@ -9,7 +9,7 @@ struct Lorem {
     mutable_override: u32,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(pattern = "mutable")]
 struct Ipsum {
     mutable: u32,
@@ -17,7 +17,7 @@ struct Ipsum {
     owned_override: u32,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(pattern = "owned")]
 struct Dolor {
     #[builder(pattern = "immutable")]
@@ -25,7 +25,7 @@ struct Dolor {
     owned: u32,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 struct Sit {
     default: u32,
 }

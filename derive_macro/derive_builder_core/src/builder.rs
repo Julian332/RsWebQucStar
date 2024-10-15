@@ -170,8 +170,14 @@ impl<'a> ToTokens for Builder<'a> {
             // Create the comma-separated set of derived traits for the builder
             let derive_attr = {
                 let clone_trait: Path = parse_quote!(Clone);
+                let de_trait: Path = parse_quote!(Deserialize);
+                let se_trait: Path = parse_quote!(Serialize);
+                let json_schema_trait: Path = parse_quote!(JsonSchema);
 
                 let mut traits: Punctuated<&Path, Token![,]> = Default::default();
+                traits.push(&de_trait);
+                traits.push(&se_trait);
+                traits.push(&json_schema_trait);
                 if self.must_derive_clone {
                     traits.push(&clone_trait);
                 }
@@ -215,12 +221,6 @@ impl<'a> ToTokens for Builder<'a> {
 
                     /// Create an empty builder, with all fields set to `None` or `PhantomData`.
                     fn #create_empty() -> Self {
-                        Self {
-                            #(#builder_field_initializers)*
-                        }
-                    }
-
-                    fn get_page_statament(filter :Self) -> Self {
                         Self {
                             #(#builder_field_initializers)*
                         }

@@ -7,7 +7,7 @@
 
 use std::fmt;
 
-use derive_builder::{Builder, UninitializedFieldError};
+use derive_builder::{PageQuery, UninitializedFieldError};
 
 fn validate_age(builder: &ExampleBuilder) -> Result<(), Error> {
     match builder.age {
@@ -16,7 +16,7 @@ fn validate_age(builder: &ExampleBuilder) -> Result<(), Error> {
     }
 }
 
-#[derive(Debug, Builder)]
+#[derive(Debug, PageQuery)]
 #[builder(setter(into), build_fn(validate = "validate_age", error = "Error"))]
 struct Example {
     name: String,

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 struct Lorem {
     #[builder(setter(into))]
     full_opt: Option<String>,
@@ -13,7 +13,7 @@ struct Lorem {
     strip_opt_vec: Option<Vec<i32>>,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(setter(into, strip_option))]
 struct Ipsum {
     foo: u32,

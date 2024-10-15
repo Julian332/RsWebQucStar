@@ -4,7 +4,7 @@ extern crate derive_builder;
 use std::clone::Clone;
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 struct Generic<T: Display>
 where
     T: Clone,
@@ -13,7 +13,7 @@ where
     pub dolor: T,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 pub struct GenericReference<'a, T: 'a + Default>
 where
     T: Display,

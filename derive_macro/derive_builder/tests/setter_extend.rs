@@ -3,7 +3,7 @@ extern crate derive_builder;
 
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 struct Lorem {
     #[builder(setter(each = "foo_append"))]
     foo: String,
@@ -17,7 +17,7 @@ struct Lorem {
     quuxes: Option<HashMap<String, i32>>,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(pattern = "mutable")]
 struct Ipsum {
     #[builder(setter(each(name = "foo_append")))]
@@ -32,7 +32,7 @@ struct Ipsum {
     quuxes: Option<HashMap<String, i32>>,
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder]
 struct Dolor {
     #[builder(setter(each(name = "foo_append")))]
@@ -144,7 +144,7 @@ fn extend_field_mutable() {
     );
 }
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(setter(skip))]
 struct Sit {
     #[builder(setter(each(name = "foo")))]

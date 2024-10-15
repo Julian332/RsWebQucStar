@@ -1,9 +1,6 @@
 use crate::models::User;
-use crate::models::UserBuilder;
 use crate::web_router_gen;
 use chrono::{DateTime, Utc};
-use derive_builder::Builder;
-use diesel::sql_types::Text;
 use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

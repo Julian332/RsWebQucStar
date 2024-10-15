@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, Builder, Clone)]
+#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
 #[builder(name = "MyBuilder")]
 struct Lorem {
     ipsum: &'static str,

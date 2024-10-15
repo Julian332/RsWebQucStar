@@ -5,7 +5,7 @@
 
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
-use derive_builder::Builder;
+use derive_builder::PageQuery;
 use diesel::{AsChangeset, Identifiable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -57,11 +57,10 @@ pub struct Permission {
     Default,
     AsChangeset,
     Debug,
-    Builder,
+    PageQuery,
 )]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[builder(derive(Deserialize, Serialize, JsonSchema))]
 pub struct User {
     pub id: i64,
     pub username: String,

@@ -1,4 +1,3 @@
-mod builder;
 pub mod user;
 
 use diesel::{PgConnection, Queryable, Selectable};

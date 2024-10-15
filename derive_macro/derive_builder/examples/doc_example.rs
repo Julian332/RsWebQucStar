@@ -2,10 +2,10 @@
 //
 //       cargo expand --example doc_example
 
-use derive_builder::Builder;
+use derive_builder::PageQuery;
 
 #[allow(dead_code)]
-#[derive(Builder)]
+#[derive(PageQuery)]
 struct Lorem {
     ipsum: u32,
 }

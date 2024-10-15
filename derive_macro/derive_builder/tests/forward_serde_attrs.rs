@@ -3,7 +3,7 @@ extern crate derive_builder;
 extern crate serde;
 extern crate serde_json;
 
-#[derive(Builder)]
+#[derive(PageQuery)]
 #[builder(setter(into), derive(serde::Serialize))]
 #[builder_struct_attr(serde(rename_all = "camelCase"))]
 #[allow(dead_code)]

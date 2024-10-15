@@ -3,7 +3,7 @@ extern crate derive_builder;
 
 /// Struct taken from `@shockham/caper` to make sure we emit the correct
 /// code for struct-level defaults in tandem with generics.
-#[derive(Builder, Clone, PartialEq)]
+#[derive(PageQuery, Clone, PartialEq)]
 #[builder(default)]
 pub struct RenderItem<T: Default> {
     /// The vertices representing this items mesh

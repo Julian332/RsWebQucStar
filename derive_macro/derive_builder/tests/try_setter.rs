@@ -22,14 +22,14 @@ impl<'a> TryFrom<&'a str> for MyAddr {
     }
 }
 
-#[derive(Debug, PartialEq, Builder)]
+#[derive(Debug, PartialEq, PageQuery)]
 #[builder(try_setter, setter(into))]
 struct Lorem {
     pub source: MyAddr,
     pub dest: MyAddr,
 }
 
-#[derive(Debug, PartialEq, Builder)]
+#[derive(Debug, PartialEq, PageQuery)]
 #[builder(try_setter, setter(into, prefix = "set"))]
 struct Ipsum {
     pub source: MyAddr,
@@ -85,7 +85,7 @@ fn renamed() {
         .expect("All fields were provided");
 }
 
-#[derive(Debug, PartialEq, Builder)]
+#[derive(Debug, PartialEq, PageQuery)]
 #[builder(try_setter, setter(into, strip_option))]
 struct MaybeIpsum {
     pub source: Option<MyAddr>,
