@@ -58,7 +58,7 @@ impl<T> PageParam<T> {
 
 #[macro_export]
 macro_rules! web_fn_gen {
-    ($table:ident ,$new:ident, $result:ident, $filter:ident) => {
+    ($table:ident ,$new:ident, $result:ident) => {
         async fn create_entity(
             State(pool): State<Pool<ConnectionManager<PgConnection>>>,
             Json(new_entity): Json<$new>,
@@ -149,9 +149,9 @@ macro_rules! web_fn_gen {
 
 #[macro_export]
 macro_rules! web_router_gen {
-    ($table:ident ,$new:ident, $result:ident, $filter:ident) => {
+    ($table:ident ,$new:ident, $result:ident) => {
         use crate::api_auth::login_impl::AuthBackend;
-        use crate::controller::{PageParam, PageRes, LOGIN_URL};
+        use crate::controller::LOGIN_URL;
         use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
         use crate::schema::$table::dsl::$table;
         use crate::web_fn_gen;
@@ -162,7 +162,6 @@ macro_rules! web_router_gen {
         use axum_login::login_required;
         use diesel::r2d2::{ConnectionManager, Pool};
         use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
-        use diesel_dynamic_schema::table;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
@@ -186,15 +185,12 @@ macro_rules! web_router_gen {
                 )
                 .api_route(
                     "/get_entity_page",
-                    post_with(
-                        crate::models::$table::get_entity_page,
-                        default_resp_docs_with_exam::<PageRes<$result, $filter>>,
-                    ),
+                    post_with(crate::models::$table::get_entity_page, empty_resp_docs),
                 )
                 .with_state(conn_pool)
                 .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))
         }
 
-        web_fn_gen!($table, $new, $result, $filter);
+        web_fn_gen!($table, $new, $result);
     };
 }

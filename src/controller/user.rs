@@ -40,4 +40,4 @@ pub struct NewUserParam {
     pub tenantry: String,
     pub remark: Option<String>,
 }
-web_router_gen!(users, NewUser, User, UserBuilder);
+web_router_gen!(users, NewUser, User);
