@@ -3,15 +3,14 @@ use std::{borrow::Cow, vec::IntoIter};
 
 use crate::BuildMethod;
 
-use darling::util::{Flag, PathList, SpannedValue};
-use darling::{Error, FromMeta};
-use proc_macro2::Span;
-use syn::{spanned::Spanned, Attribute, Generics, Ident, Meta, Path};
-
 use crate::{
     BlockContents, Builder, BuilderField, BuilderFieldType, BuilderPattern, DefaultExpression,
     Each, FieldConversion, Initializer, Setter,
 };
+use darling::util::{Flag, PathList, SpannedValue};
+use darling::{Error, FromMeta};
+use proc_macro2::Span;
+use syn::{spanned::Spanned, Attribute, Generics, Ident, Meta, Path};
 
 #[derive(Debug, Clone)]
 enum VisibilityAttr {
@@ -527,7 +526,7 @@ impl TryFrom<Vec<Attribute>> for StructForwardedAttrs {
     supports(struct_named)
 )]
 pub struct Options {
-    ident: Ident,
+    pub ident: Ident,
 
     #[darling(with = TryFrom::try_from)]
     attrs: StructForwardedAttrs,
@@ -713,7 +712,7 @@ impl Options {
 /// struct.
 pub struct FieldWithDefaults<'a> {
     parent: &'a Options,
-    field: &'a Field,
+    pub field: &'a Field,
 }
 
 /// Accessors for parsed properties, with transparent pull-through from the

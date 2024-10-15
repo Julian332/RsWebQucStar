@@ -9,20 +9,20 @@ const LOGIN_URL: &str = "/auth/login";
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageParam<T> {
     //todo derive builder
-    filters: Option<T>,
-    page_no: i64,
-    page_size: i64,
-    order_column: String,
-    is_desc: bool,
+    pub filters: Option<T>,
+    pub page_no: i64,
+    pub page_size: i64,
+    pub order_column: String,
+    pub is_desc: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageRes<T, TBuilder> {
-    page_no: i64,
-    page_size: i64,
-    records: Vec<T>,
-    total_count: i64,
-    filters: Option<TBuilder>,
+    pub page_no: i64,
+    pub page_size: i64,
+    pub records: Vec<T>,
+    pub total_count: i64,
+    pub filters: Option<TBuilder>,
 }
 
 impl<T, TBuilder> PageRes<T, TBuilder> {
@@ -51,7 +51,7 @@ impl<T, TBuilder> PageRes<T, TBuilder> {
 }
 
 impl<T> PageParam<T> {
-    fn get_offset_limit(&self) -> (i64, i64) {
+    pub fn get_offset_limit(&self) -> (i64, i64) {
         ((self.page_no - 1) * self.page_size, self.page_size)
     }
 }
@@ -114,36 +114,36 @@ macro_rules! web_fn_gen {
             Ok(Json(result))
         }
 
-        async fn get_entity_page(
-            State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-            Json(page): Json<PageParam<$filter>>,
-        ) -> Result<Json<PageRes<$result, $filter>>, String> {
-            let mut connection = pool.get().unwrap();
-            let off_lim = page.get_offset_limit();
-            let res;
-            let x_table = table(stringify!($table));
-            let order_column = x_table.column::<Text, _>(page.order_column.clone());
-            if page.is_desc {
-                res = $table
-                    .offset(off_lim.0)
-                    .limit(off_lim.1)
-                    .order(order_column.desc())
-                    .select($result::as_select())
-                    .load(&mut connection)
-                    .expect("Error loading page");
-            } else {
-                res = $table
-                    .offset(off_lim.0)
-                    .limit(off_lim.1)
-                    .order(order_column.asc())
-                    .select($result::as_select())
-                    .load(&mut connection)
-                    .expect("Error loading page");
-            }
-
-            let page_res = PageRes::from_param_records(page, res);
-            Ok(Json(page_res))
-        }
+        // async fn get_entity_page(
+        //     State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+        //     Json(page): Json<PageParam<$filter>>,
+        // ) -> Result<Json<PageRes<$result, $filter>>, String> {
+        //     let mut connection = pool.get().unwrap();
+        //     let off_lim = page.get_offset_limit();
+        //     let res;
+        //     let x_table = table(stringify!($table));
+        //     let order_column = x_table.column::<Text, _>(page.order_column.clone());
+        //     if page.is_desc {
+        //         res = $table
+        //             .offset(off_lim.0)
+        //             .limit(off_lim.1)
+        //             .order(order_column.desc())
+        //             .select($result::as_select())
+        //             .load(&mut connection)
+        //             .expect("Error loading page");
+        //     } else {
+        //         res = $table
+        //             .offset(off_lim.0)
+        //             .limit(off_lim.1)
+        //             .order(order_column.asc())
+        //             .select($result::as_select())
+        //             .load(&mut connection)
+        //             .expect("Error loading page");
+        //     }
+        //
+        //     let page_res = PageRes::from_param_records(page, res);
+        //     Ok(Json(page_res))
+        // }
     };
 }
 
@@ -187,7 +187,7 @@ macro_rules! web_router_gen {
                 .api_route(
                     "/get_entity_page",
                     post_with(
-                        get_entity_page,
+                        crate::models::$table::get_entity_page,
                         default_resp_docs_with_exam::<PageRes<$result, $filter>>,
                     ),
                 )

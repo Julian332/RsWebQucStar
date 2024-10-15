@@ -18,9 +18,7 @@ use serde::{Deserialize, Serialize};
     Default,
     Insertable,
     AsChangeset,
-    Builder,
 )]
-#[builder(derive(Deserialize, Serialize, JsonSchema))]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser {
@@ -34,8 +32,7 @@ pub struct NewUser {
     pub is_delete: bool,
 }
 
-#[derive(Serialize, Deserialize, JsonSchema, Builder)]
-#[builder(derive(Deserialize, Serialize, JsonSchema))]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct NewUserParam {
     pub username: String,
     pub password: String,

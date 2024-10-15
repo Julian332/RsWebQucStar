@@ -219,6 +219,12 @@ impl<'a> ToTokens for Builder<'a> {
                             #(#builder_field_initializers)*
                         }
                     }
+
+                    fn get_page_statament(filter :Self) -> Self {
+                        Self {
+                            #(#builder_field_initializers)*
+                        }
+                    }
                 }
             ));
 

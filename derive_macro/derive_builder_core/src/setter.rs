@@ -131,20 +131,25 @@ impl<'a> ToTokens for Setter<'a> {
                 into_value = wrap_expression_in_some(crate_root, into_value);
             }
             if builder_field_is_option {
-                into_value = wrap_expression_in_some(crate_root, into_value);
+                wrap_expression_in_some(crate_root, into_value);
             }
 
             tokens.append_all(quote!(
                 #(#attrs)*
                 #[allow(unused_mut)]
-                #vis fn #ident #ty_params (#self_param, value: #param_ty)
-                    -> #return_ty
+                #vis fn #ident #ty_params (self)
+                    -> Option<#param_ty>
                 {
                     let mut new = #self_into_return_ty;
-                    new.#field_ident = #into_value;
-                    new
+                    new.#field_ident
                 }
             ));
+            // #[allow(unused_mut)]
+            //   pub fn username(&mut self, value: String) -> &mut Self {
+            //     let mut new = self;
+            //     new.username = ::derive_builder::export::core::option::Option::Some(value);
+            //     new
+            //   }
 
             if self.try_setter {
                 let try_ty_params =
