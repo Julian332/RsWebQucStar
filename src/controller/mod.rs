@@ -22,6 +22,30 @@ pub struct PageRes<T, TBuilder> {
     pub filters: Option<TBuilder>,
 }
 
+#[derive(Deserialize, Serialize, JsonSchema, Clone)]
+pub enum Compare {
+    NotEqual,
+    Equal,
+    Greater,
+    GreaterAndEqual,
+    Less,
+    LessAndEqual,
+}
+
+impl Compare {
+    pub fn to_ident(self) -> String {
+        match self {
+            Compare::NotEqual => "ne",
+            Compare::Equal => "eq",
+            Compare::Greater => "gt",
+            Compare::GreaterAndEqual => "ge",
+            Compare::Less => "lt",
+            Compare::LessAndEqual => "le",
+        }
+        .to_string()
+    }
+}
+
 impl<T, TBuilder> PageRes<T, TBuilder> {
     pub fn from_param_records(param: PageParam<TBuilder>, records: Vec<T>) -> PageRes<T, TBuilder> {
         PageRes {

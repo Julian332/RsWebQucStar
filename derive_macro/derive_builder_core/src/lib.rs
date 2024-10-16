@@ -82,11 +82,28 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
     for field in opts.fields() {
         let ident = field.field_ident();
         filters.push(quote!(
-                if let Some(filter) = page.filters.clone() {
                     if let Some(filter_param) = filter.#ident {
-                        statement = statement.filter(crate::schema::#schema::#ident.eq(filter_param));
+                        match filter_param.0 {
+                            Compare::NotEqual => {
+                                statement = statement.filter(crate::schema::#schema::#ident.ne(filter_param.1));
+                            }
+                            Compare::Equal => {
+                                statement = statement.filter(crate::schema::#schema::#ident.eq(filter_param.1));
+                            }
+                            Compare::Greater => {
+                                statement = statement.filter(crate::schema::#schema::#ident.gt(filter_param.1));
+                            }
+                            Compare::GreaterAndEqual => {
+                                statement = statement.filter(crate::schema::#schema::#ident.ge(filter_param.1));
+                            }
+                            Compare::Less => {
+                                statement = statement.filter(crate::schema::#schema::#ident.lt(filter_param.1));
+                            }
+                            Compare::LessAndEqual => {
+                                statement = statement.filter(crate::schema::#schema::#ident.le(filter_param.1));
+                            }
+                        }
                     }
-                }
         ));
     }
 
@@ -97,11 +114,11 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         use crate::schema::#schema::dsl::#schema;
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
-        use axum::extract::{Path, State};
-        use axum::response::Json;
+        use axum::extract::{Path};
         use axum_login::login_required;
         use diesel::r2d2::{ConnectionManager, Pool};
-        use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+        use diesel::{ PgConnection};
+        use crate::controller::Compare;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
@@ -206,8 +223,9 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                 let off_lim = page.get_offset_limit();
 
                 let mut statement = crate::schema::#schema::dsl::#schema.into_boxed();
-
-                #(#filters)*
+                if let Some(filter) = page.filters.clone() {
+                    #(#filters)*
+                }
 
                 let res;
                 let x_table = diesel_dynamic_schema::table(stringify!(crate::schema::#schema));
