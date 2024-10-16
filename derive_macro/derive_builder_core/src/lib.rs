@@ -83,7 +83,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         let ident = field.field_ident();
         filters.push(quote!(
                 if let Some(filter) = page.filters.clone() {
-                    if let Some(filter_param) = filter.#ident() {
+                    if let Some(filter_param) = filter.#ident {
                         statement = statement.filter(crate::schema::#schema::#ident.eq(filter_param));
                     }
                 }
@@ -242,7 +242,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
 
     for field in opts.fields() {
         builder.push_field(field.as_builder_field());
-        builder.push_setter_fn(field.as_setter());
+        // builder.push_setter_fn(field.as_setter());
         // build_fn.push_initializer(field.as_initializer());
     }
 

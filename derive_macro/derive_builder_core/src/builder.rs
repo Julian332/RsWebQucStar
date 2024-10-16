@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use proc_macro2::TokenStream;
-use quote::{format_ident, ToTokens, TokenStreamExt};
+use quote::{ToTokens, TokenStreamExt};
 use syn::punctuated::Punctuated;
 use syn::{Path, TraitBound, TraitBoundModifier, TypeParamBound};
 
@@ -151,21 +151,25 @@ pub struct Builder<'a> {
 impl<'a> ToTokens for Builder<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if self.enabled {
-            let crate_root = self.crate_root;
+            let _ = self.crate_root;
             let builder_vis = &self.visibility;
             let builder_ident = &self.ident;
+            let _ = &self.generate_error;
+            let _ = &self.generate_validation_error;
+            let _ = &self.no_alloc;
+            let _ = &self.std;
+            let _ = ALLOC_NOT_ENABLED_ERROR;
             // Splitting because Generics doesn't output WhereClause, see dtolnay/syn#782
             let (struct_generics, struct_where_clause) = (
                 self.generics,
                 self.generics.and_then(|g| g.where_clause.as_ref()),
             );
             let bounded_generics = self.compute_impl_bounds();
-            let (impl_generics, impl_ty_generics, impl_where_clause) =
-                bounded_generics.split_for_impl();
+            let (_, _, _) = bounded_generics.split_for_impl();
             let builder_fields = &self.fields;
-            let builder_field_initializers = &self.field_initializers;
-            let create_empty = &self.create_empty;
-            let functions = &self.functions;
+            let _ = &self.field_initializers;
+            let _ = &self.create_empty;
+            let _ = &self.functions;
 
             // Create the comma-separated set of derived traits for the builder
             let derive_attr = {
@@ -191,7 +195,7 @@ impl<'a> ToTokens for Builder<'a> {
             };
 
             let struct_attrs = self.struct_attrs;
-            let impl_attrs = self.impl_attrs;
+            let _ = self.impl_attrs;
 
             let builder_doc_comment = &self.doc_comment;
 
@@ -210,102 +214,102 @@ impl<'a> ToTokens for Builder<'a> {
                 }
             ));
 
-            #[cfg(not(feature = "clippy"))]
-            tokens.append_all(quote!(#[allow(clippy::all)]));
-
-            tokens.append_all(quote!(
-                #(#impl_attrs)*
-                #[allow(dead_code)]
-                impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
-                    #(#functions)*
-
-                    /// Create an empty builder, with all fields set to `None` or `PhantomData`.
-                    fn #create_empty() -> Self {
-                        Self {
-                            #(#builder_field_initializers)*
-                        }
-                    }
-                }
-            ));
+            // #[cfg(not(feature = "clippy"))]
+            // tokens.append_all(quote!(#[allow(clippy::all)]));
+            //
+            // tokens.append_all(quote!(
+            //     #(#impl_attrs)*
+            //     #[allow(dead_code)]
+            //     impl #impl_generics #builder_ident #impl_ty_generics #impl_where_clause {
+            //         #(#functions)*
+            //
+            //         /// Create an empty builder, with all fields set to `None` or `PhantomData`.
+            //         fn #create_empty() -> Self {
+            //             Self {
+            //                 #(#builder_field_initializers)*
+            //             }
+            //         }
+            //     }
+            // ));
 
             if self.impl_default {
-                tokens.append_all(quote!(
-                    impl #impl_generics #crate_root::export::core::default::Default for #builder_ident #impl_ty_generics #impl_where_clause {
-                        fn default() -> Self {
-                            Self::#create_empty()
-                        }
-                    }
-                ));
+                // tokens.append_all(quote!(
+                //     impl #impl_generics #crate_root::export::core::default::Default for #builder_ident #impl_ty_generics #impl_where_clause {
+                //         fn default() -> Self {
+                //             Self::#create_empty()
+                //         }
+                //     }
+                // ));
             }
 
-            if self.no_alloc && self.generate_error && self.generate_validation_error {
-                let err = syn::Error::new_spanned(&self.ident, ALLOC_NOT_ENABLED_ERROR);
-                tokens.append_all(err.to_compile_error());
-            } else if self.generate_error {
-                let builder_error_ident = format_ident!("{}Error", builder_ident);
-                let builder_error_doc = format!("Error type for {}", builder_ident);
-
-                let validation_error = if self.generate_validation_error {
-                    quote!(
-                        /// Custom validation error
-                        ValidationError(#crate_root::export::core::string::String),
-                    )
-                } else {
-                    TokenStream::new()
-                };
-                let validation_from = if self.generate_validation_error {
-                    quote!(
-                        impl #crate_root::export::core::convert::From<#crate_root::export::core::string::String> for #builder_error_ident {
-                            fn from(s: #crate_root::export::core::string::String) -> Self {
-                                Self::ValidationError(s)
-                            }
-                        }
-                    )
-                } else {
-                    TokenStream::new()
-                };
-                let validation_display = if self.generate_validation_error {
-                    quote!(
-                        Self::ValidationError(ref error) => write!(f, "{}", error),
-                    )
-                } else {
-                    TokenStream::new()
-                };
-
-                tokens.append_all(quote!(
-                    #[doc=#builder_error_doc]
-                    #[derive(Debug)]
-                    #[non_exhaustive]
-                    #builder_vis enum #builder_error_ident {
-                        /// Uninitialized field
-                        UninitializedField(&'static str),
-                        #validation_error
-                    }
-
-                    impl #crate_root::export::core::convert::From<#crate_root::UninitializedFieldError> for #builder_error_ident {
-                        fn from(s: #crate_root::UninitializedFieldError) -> Self {
-                            Self::UninitializedField(s.field_name())
-                        }
-                    }
-
-                    #validation_from
-
-                    impl #crate_root::export::core::fmt::Display for #builder_error_ident {
-                        fn fmt(&self, f: &mut #crate_root::export::core::fmt::Formatter) -> #crate_root::export::core::fmt::Result {
-                            match self {
-                                Self::UninitializedField(ref field) => write!(f, "`{}` must be initialized", field),
-                                #validation_display
-                            }
-                        }
-                    }
-                ));
-
-                if self.std {
-                    tokens.append_all(quote!(
-                        impl std::error::Error for #builder_error_ident {}
-                    ));
-                }
-            }
+            // if self.no_alloc && self.generate_error && self.generate_validation_error {
+            //     let err = syn::Error::new_spanned(&self.ident, ALLOC_NOT_ENABLED_ERROR);
+            //     tokens.append_all(err.to_compile_error());
+            // } else if self.generate_error {
+            //     let builder_error_ident = format_ident!("{}Error", builder_ident);
+            //     let builder_error_doc = format!("Error type for {}", builder_ident);
+            //
+            //     let validation_error = if self.generate_validation_error {
+            //         quote!(
+            //             /// Custom validation error
+            //             ValidationError(#crate_root::export::core::string::String),
+            //         )
+            //     } else {
+            //         TokenStream::new()
+            //     };
+            //     let validation_from = if self.generate_validation_error {
+            //         quote!(
+            //             impl #crate_root::export::core::convert::From<#crate_root::export::core::string::String> for #builder_error_ident {
+            //                 fn from(s: #crate_root::export::core::string::String) -> Self {
+            //                     Self::ValidationError(s)
+            //                 }
+            //             }
+            //         )
+            //     } else {
+            //         TokenStream::new()
+            //     };
+            //     let validation_display = if self.generate_validation_error {
+            //         quote!(
+            //             Self::ValidationError(ref error) => write!(f, "{}", error),
+            //         )
+            //     } else {
+            //         TokenStream::new()
+            //     };
+            //
+            //     tokens.append_all(quote!(
+            //         #[doc=#builder_error_doc]
+            //         #[derive(Debug)]
+            //         #[non_exhaustive]
+            //         #builder_vis enum #builder_error_ident {
+            //             /// Uninitialized field
+            //             UninitializedField(&'static str),
+            //             #validation_error
+            //         }
+            //
+            //         impl #crate_root::export::core::convert::From<#crate_root::UninitializedFieldError> for #builder_error_ident {
+            //             fn from(s: #crate_root::UninitializedFieldError) -> Self {
+            //                 Self::UninitializedField(s.field_name())
+            //             }
+            //         }
+            //
+            //         #validation_from
+            //
+            //         impl #crate_root::export::core::fmt::Display for #builder_error_ident {
+            //             fn fmt(&self, f: &mut #crate_root::export::core::fmt::Formatter) -> #crate_root::export::core::fmt::Result {
+            //                 match self {
+            //                     Self::UninitializedField(ref field) => write!(f, "`{}` must be initialized", field),
+            //                     #validation_display
+            //                 }
+            //             }
+            //         }
+            //     ));
+            //
+            //     if self.std {
+            //         tokens.append_all(quote!(
+            //             impl std::error::Error for #builder_error_ident {}
+            //         ));
+            //     }
+            // }
         }
     }
 }
