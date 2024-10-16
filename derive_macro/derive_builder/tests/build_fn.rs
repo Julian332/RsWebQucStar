@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PageQuery, PartialEq)]
+#[derive(Debug, WebApiGen, PartialEq)]
 #[builder(build_fn(skip))]
 pub struct Lorem {
     percentile: u8,
 }
 
-#[derive(Debug, PageQuery, PartialEq)]
+#[derive(Debug, WebApiGen, PartialEq)]
 #[builder(build_fn(name = "finish"))]
 pub struct Ipsum {
     percentile: u8,

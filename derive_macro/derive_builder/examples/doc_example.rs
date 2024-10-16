@@ -2,10 +2,10 @@
 //
 //       cargo expand --example doc_example
 
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
 #[allow(dead_code)]
-#[derive(PageQuery)]
+#[derive(WebApiGen)]
 struct Lorem {
     ipsum: u32,
 }

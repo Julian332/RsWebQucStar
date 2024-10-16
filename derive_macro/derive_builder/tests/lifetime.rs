@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 struct Lorem<'a> {
     ipsum: &'a str,
 }

@@ -3,10 +3,10 @@
 //! NOTE: This can only be tested in examples, but not integration tests.
 #![deny(missing_docs)]
 
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
 /// Traditional form of communication.
-#[derive(Debug, PageQuery)]
+#[derive(Debug, WebApiGen)]
 #[builder(setter(into))]
 pub struct Letter {
     /// Be creative.

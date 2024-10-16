@@ -3,9 +3,9 @@
 //       cargo expand --example readme_example
 #![allow(dead_code)]
 
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
-#[derive(Default, PageQuery, Debug)]
+#[derive(Default, WebApiGen, Debug)]
 #[builder(setter(into))]
 struct Channel {
     token: i32,

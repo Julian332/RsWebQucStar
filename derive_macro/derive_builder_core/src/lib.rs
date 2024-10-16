@@ -64,6 +64,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
     };
     let model = opts.ident.clone();
     let schema = format_ident!("{}s", model.to_string().to_lowercase());
+    let new_model = format_ident!("New{}", model);
     let mut builder = opts.as_builder();
     let builder_ident = opts.builder_ident();
     // let  build_fn = opts.as_build_method();
@@ -90,51 +91,149 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
     }
 
     let f = quote!(
-        pub mod #schema {
+        use crate::api_auth::login_impl::AuthBackend;
+        use crate::controller::LOGIN_URL;
+        use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
+        use crate::schema::#schema::dsl::#schema;
+        use aide::axum::routing::{delete_with, get_with, post_with, put_with};
+        use aide::axum::ApiRouter;
+        use axum::extract::{Path, State};
+        use axum::response::Json;
+        use axum_login::login_required;
+        use diesel::r2d2::{ConnectionManager, Pool};
+        use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+
+        pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
+            ApiRouter::new()
+                .api_route(
+                    "/create_entity",
+                    post_with(web::create_entity, empty_resp_docs),
+                    // .get_with(list_todos, empty_resp_docs),
+                )
+                .api_route(
+                    "/get_entity_by_id/:id",
+                    get_with(web::get_entity_by_id, default_resp_docs_with_exam::<#model>),
+                    // .delete_with(delete_todo, empty_resp_docs),
+                )
+                .api_route(
+                    "/update_entity_by_id/:id",
+                    put_with(web::update_entity_by_id, default_resp_docs_with_exam::<#model>),
+                )
+                .api_route(
+                    "/delete_entity_by_id/:id",
+                    delete_with(web::delete_entity_by_id, default_resp_docs_with_exam::<#model>),
+                )
+                .api_route(
+                    "/get_entity_page",
+                    post_with(web::get_entity_page, empty_resp_docs),
+                )
+                .with_state(conn_pool)
+                .route_layer(login_required!(AuthBackend))
+        }
+
+        // web_fn_gen!(#schema, #new_model, #model);
+
+
+        pub mod web {
             use crate::controller::{PageParam, PageRes};
-            use crate::models::{User, UserBuilder};
+            use super::*;
             use crate::openapi::extractors::Json;
             use axum::extract::State;
             use diesel::r2d2::{ConnectionManager, Pool};
             use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 
 
-            pub async fn get_entity_page(
-            State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-            Json(page): Json<PageParam<#builder_ident>>,
-        ) -> Result<Json<PageRes<#model, #builder_ident>>, String> {
-            let mut connection = pool.get().unwrap();
-            let off_lim = page.get_offset_limit();
+            pub async fn create_entity(
+                State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+                Json(new_entity): Json<#new_model>,
+            ) -> Result<Json<#model>, String> {
+                let mut connection = pool.get().unwrap();
 
-            let mut statement = crate::schema::#schema::dsl::#schema.into_boxed();
+                let result = diesel::insert_into(#schema)
+                    .values(new_entity)
+                    .returning(#model::as_returning())
+                    .get_result(&mut connection)
+                    .expect("Error saving new entity");
 
-            #(#filters)*
-
-            let res;
-            let x_table = diesel_dynamic_schema::table(stringify!(crate::schema::#schema));
-
-            let order_column = x_table.column::<diesel::sql_types::Text, _>(page.order_column.clone());
-            if page.is_desc {
-                res = statement
-                    .offset(off_lim.0)
-                    .limit(off_lim.1)
-                    .order(order_column.desc())
-                    .select(#model::as_select())
-                    .load(&mut connection)
-                    .expect("Error loading page");
-            } else {
-                res = statement
-                    .offset(off_lim.0)
-                    .limit(off_lim.1)
-                    .order(order_column.asc())
-                    .select(#model::as_select())
-                    .load(&mut connection)
-                    .expect("Error loading page");
+                Ok(Json(result))
             }
 
-            let page_res = PageRes::from_param_records(page, res);
-            Ok(Json(page_res))
-        }
+            pub async fn update_entity_by_id(
+                State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+                Path(id_param): Path<i64>,
+                Json(new): Json<#new_model>,
+            ) -> Result<Json<#model>, String> {
+                let mut connection = pool.get().unwrap();
+                let result = diesel::update(#schema.find(id_param))
+                    .set(&new)
+                    .returning(#model::as_returning())
+                    .get_result(&mut connection)
+                    .expect("Error update  entity");
+                Ok(Json(result))
+            }
+
+            pub async fn get_entity_by_id(
+                State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+                Path(id_param): Path<i64>,
+            ) -> Result<Json<#model>, String> {
+                let mut connection = pool.get().unwrap();
+                let result = #schema
+                    .find(id_param)
+                    .select(#model::as_select())
+                    .get_result(&mut connection)
+                    .expect("get entity by id failed");
+                Ok(Json(result))
+            }
+
+            pub async fn delete_entity_by_id(
+                State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+                Path(id_param): Path<i64>,
+            ) -> Result<Json<#model>, String> {
+                let mut connection = pool.get().unwrap();
+                let result = diesel::update(#schema.find(id_param))
+                    .set(crate::schema::#schema::is_delete.eq(true))
+                    .returning(#model::as_returning())
+                    .get_result(&mut connection)
+                    .expect("Error delete  entity");
+                Ok(Json(result))
+            }
+
+            pub async fn get_entity_page(
+                State(pool): State<Pool<ConnectionManager<PgConnection>>>,
+                Json(page): Json<PageParam<#builder_ident>>,
+            ) -> Result<Json<PageRes<#model, #builder_ident>>, String> {
+                let mut connection = pool.get().unwrap();
+                let off_lim = page.get_offset_limit();
+
+                let mut statement = crate::schema::#schema::dsl::#schema.into_boxed();
+
+                #(#filters)*
+
+                let res;
+                let x_table = diesel_dynamic_schema::table(stringify!(crate::schema::#schema));
+
+                let order_column = x_table.column::<diesel::sql_types::Text, _>(page.order_column.clone());
+                if page.is_desc {
+                    res = statement
+                        .offset(off_lim.0)
+                        .limit(off_lim.1)
+                        .order(order_column.desc())
+                        .select(#model::as_select())
+                        .load(&mut connection)
+                        .expect("Error loading page");
+                } else {
+                    res = statement
+                        .offset(off_lim.0)
+                        .limit(off_lim.1)
+                        .order(order_column.asc())
+                        .select(#model::as_select())
+                        .load(&mut connection)
+                        .expect("Error loading page");
+                }
+
+                let page_res = PageRes::from_param_records(page, res);
+                Ok(Json(page_res))
+            }
         }
 
     );

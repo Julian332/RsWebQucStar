@@ -14,7 +14,7 @@ use proc_macro::TokenStream;
 ///
 /// See the `derive_builder` crate documentation for more details.
 #[proc_macro_derive(
-    PageQuery,
+    WebApiGen,
     attributes(
         builder,
         builder_field_attr,

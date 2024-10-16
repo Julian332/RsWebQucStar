@@ -8,5 +8,5 @@ sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
     ERC_20,
-    "src/contract/erc20.json"
+    "src/contract/abis/erc20.json"
 );

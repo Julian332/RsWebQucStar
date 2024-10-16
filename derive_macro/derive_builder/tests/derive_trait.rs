@@ -6,7 +6,7 @@ extern crate derive_builder;
 #[derive(Debug, Default, Clone)]
 struct NotPartialEq(String);
 
-#[derive(Debug, Clone, PageQuery)]
+#[derive(Debug, Clone, WebApiGen)]
 #[builder(derive(Debug, PartialEq, Eq))]
 struct Lorem {
     foo: u8,

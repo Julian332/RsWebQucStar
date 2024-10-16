@@ -1,9 +1,9 @@
 //! This example illustrates the use of `validate` to add a pre-build validation
 //! step.
 
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
-#[derive(PageQuery, Debug, PartialEq)]
+#[derive(WebApiGen, Debug, PartialEq)]
 #[builder(build_fn(validate = Self::validate))]
 struct Lorem {
     pub ipsum: u8,

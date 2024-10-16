@@ -2,7 +2,7 @@
 extern crate derive_builder;
 
 pub mod foo {
-    #[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+    #[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
     #[builder(private, setter(into))]
     pub struct Lorem {
         pub private: String,
@@ -10,7 +10,7 @@ pub mod foo {
         pub public: String,
     }
 
-    #[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+    #[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
     #[builder(public, setter(into))]
     pub struct Ipsum {
         #[builder(private)]

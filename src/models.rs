@@ -3,12 +3,9 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
-use derive_builder::PageQuery;
-use diesel::{AsChangeset, Identifiable, Queryable, Selectable};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use diesel::{Identifiable, Queryable, Selectable};
+use serde::Deserialize;
 
 #[derive(Queryable, Debug, Identifiable, Selectable)]
 #[diesel(table_name = crate::schema::groups)]
@@ -39,34 +36,6 @@ pub struct GroupsPermission {
 pub struct Permission {
     pub id: i64,
     pub name: String,
-    pub remark: Option<String>,
-    pub update_time: Option<DateTime<Utc>>,
-    pub create_time: DateTime<Utc>,
-    pub create_by: i64,
-    pub update_by: Option<i64>,
-    pub is_delete: bool,
-}
-
-#[derive(
-    Queryable,
-    Clone,
-    Serialize,
-    Deserialize,
-    Selectable,
-    JsonSchema,
-    Default,
-    AsChangeset,
-    Debug,
-    PageQuery,
-)]
-#[diesel(table_name = crate::schema::users)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct User {
-    pub id: i64,
-    pub username: String,
-    pub password: String,
-    pub group_id: i64,
-    pub tenantry: String,
     pub remark: Option<String>,
     pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,

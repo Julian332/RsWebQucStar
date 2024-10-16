@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 struct Lorem {
     #[builder(setter(into))]
     foo: String,
 }
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 #[builder(setter(into))]
 struct Ipsum {
     foo: u32,

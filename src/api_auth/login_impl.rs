@@ -1,5 +1,5 @@
-use crate::controller::user::NewUser;
-use crate::models::{Permission, User};
+use crate::controller::user::{NewUser, User};
+use crate::models::Permission;
 use crate::openapi::errors::AppError;
 use crate::schema::groups::dsl::groups;
 use crate::schema::groups_permissions::dsl::groups_permissions;

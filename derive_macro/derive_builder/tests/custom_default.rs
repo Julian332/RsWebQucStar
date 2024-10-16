@@ -3,7 +3,7 @@ extern crate derive_builder;
 
 mod field_level {
     use derive_builder::UninitializedFieldError;
-    #[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+    #[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
     struct Lorem {
         required: String,
         #[builder(default)]
@@ -71,7 +71,7 @@ mod field_level {
 }
 
 mod struct_level {
-    #[derive(Debug, Clone, PartialEq, Eq, PageQuery)]
+    #[derive(Debug, Clone, PartialEq, Eq, WebApiGen)]
     #[builder(default = explicit_default())]
     struct Lorem {
         #[builder(default = true)]
@@ -86,7 +86,7 @@ mod struct_level {
         }
     }
 
-    #[derive(Debug, Clone, PartialEq, Eq, PageQuery)]
+    #[derive(Debug, Clone, PartialEq, Eq, WebApiGen)]
     #[builder(default)]
     struct Ipsum {
         not_type_default: Option<u16>,

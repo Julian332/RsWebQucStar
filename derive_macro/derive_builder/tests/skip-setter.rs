@@ -9,7 +9,7 @@ fn new_notdefaultable() -> NotDefaultable {
     NotDefaultable("Lorem".to_string())
 }
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 #[builder(setter(skip = false))]
 struct SetterOptOut {
     setter_present_by_explicit_default: u32,
@@ -21,7 +21,7 @@ struct SetterOptOut {
     setter_skipped_with_explicit_default: u32,
 }
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 #[builder(setter(skip))]
 struct SetterOptIn {
     setter_skipped_by_shorthand_default: u32,
@@ -33,14 +33,14 @@ struct SetterOptIn {
     setter_present_by_shorthand_opt_in_2: u32,
 }
 
-#[derive(Debug, PartialEq, PageQuery, Clone)]
+#[derive(Debug, PartialEq, WebApiGen, Clone)]
 #[builder(default, setter(skip))]
 struct SetterOptInStructDefault {
     setter_skipped_with_struct_default: NotDefaultable,
     setter_skipped_with_type_default: u32,
 }
 
-#[derive(Debug, PartialEq, PageQuery, Clone)]
+#[derive(Debug, PartialEq, WebApiGen, Clone)]
 #[builder(setter(into))]
 struct SetterOptInFieldDefault {
     #[builder(setter(skip), default = "new_notdefaultable()")]

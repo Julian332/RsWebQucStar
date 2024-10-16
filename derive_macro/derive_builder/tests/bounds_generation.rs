@@ -7,19 +7,19 @@ pub struct Dolor(String);
 
 /// Notice that this type derives Builder without disallowing
 /// `Lorem<Dolor>`.
-#[derive(Debug, Clone, PageQuery, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, WebApiGen, PartialEq, Eq, Default)]
 #[builder(field(private), setter(into))]
 pub struct Lorem<T> {
     ipsum: T,
 }
 
-#[derive(Debug, Clone, PageQuery, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, WebApiGen, PartialEq, Eq, Default)]
 #[builder(field(private))]
 pub struct VecLorem<T> {
     ipsum: Vec<T>,
 }
 
-#[derive(Debug, Clone, PageQuery, PartialEq, Eq)]
+#[derive(Debug, Clone, WebApiGen, PartialEq, Eq)]
 #[builder(pattern = "owned", field(private))]
 pub struct OwnedLorem<T> {
     ipsum: T,

@@ -2,7 +2,7 @@
 
 use std::convert::From;
 
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
 #[derive(PartialEq, Default, Debug, Clone)]
 struct Uuid(i32);
@@ -21,7 +21,7 @@ impl From<i32> for Authentication {
     }
 }
 
-#[derive(Debug, Default, PageQuery)]
+#[derive(Debug, Default, WebApiGen)]
 #[builder(setter(into))]
 struct Channel {
     id: Uuid,

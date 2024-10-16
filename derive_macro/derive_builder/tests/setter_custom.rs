@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate derive_builder;
 
-#[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+#[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 #[builder(setter(skip = false), default)]
 struct SetterCustom {
     #[builder(setter(custom = true))]

@@ -184,7 +184,7 @@ macro_rules! web_router_gen {
                 )
                 .api_route(
                     "/get_entity_page",
-                    post_with(crate::models::$table::get_entity_page, empty_resp_docs),
+                    post_with(web::get_entity_page, empty_resp_docs),
                 )
                 .with_state(conn_pool)
                 .route_layer(login_required!(AuthBackend, login_url = LOGIN_URL))

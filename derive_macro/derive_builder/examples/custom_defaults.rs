@@ -1,6 +1,6 @@
-use derive_builder::PageQuery;
+use derive_builder::WebApiGen;
 
-#[derive(PageQuery, PartialEq, Debug)]
+#[derive(WebApiGen, PartialEq, Debug)]
 struct Lorem {
     ipsum: String,
     #[builder(default = "self.default_dolor()?")]

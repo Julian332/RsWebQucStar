@@ -24,7 +24,7 @@ mod openapi;
 pub mod schema;
 mod task;
 
-static static_connection_pool: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
+static STATIC_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
 
 #[tokio::main]
 async fn main() {
@@ -33,7 +33,7 @@ async fn main() {
     set_api_doc();
 
     let connection_pool = get_connection_pool();
-    static_connection_pool.get_or_init(|| connection_pool.clone());
+    STATIC_CONNECTION_POOL.get_or_init(|| connection_pool.clone());
     set_scheduler().await;
     let mut api = OpenApi::default();
 

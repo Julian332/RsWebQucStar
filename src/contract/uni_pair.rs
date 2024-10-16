@@ -18,7 +18,7 @@ sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
     UNI_PAIR,
-    "src/contract/uni_pair.json"
+    "src/contract/abis/uni_pair.json"
 );
 
 pub async fn get_pair(token_a: Address, token_b: Address) -> Address {

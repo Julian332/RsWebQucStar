@@ -12,9 +12,9 @@
 //! ## What you write
 //!
 //! ```rust
-//! use derive_builder::PageQuery;
+//! use derive_builder::WebApiGen;
 //!
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! struct Lorem {
 //!     ipsum: u32,
 //!     // ..
@@ -25,7 +25,7 @@
 //! ## What you get
 //!
 //! ```rust
-//! # use derive_builder::{PageQuery, UninitializedFieldError};
+//! # use derive_builder::{WebApiGen, UninitializedFieldError};
 //! #
 //! # struct Lorem {
 //! #     ipsum: u32,
@@ -73,8 +73,8 @@
 //! Let's look again at the example above. You can now build structs like this:
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
-//! # #[derive(PageQuery)] struct Lorem { ipsum: u32 }
+//! # use derive_builder::WebApiGen;
+//! # #[derive(WebApiGen)] struct Lorem { ipsum: u32 }
 //! # fn try_main() -> Result<(), Box<dyn std::error::Error>> {
 //! let x: Lorem = LoremBuilder::default().ipsum(42).build()?;
 //! # Ok(())
@@ -86,8 +86,8 @@
 //! So let's make this call conditional
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
-//! # #[derive(PageQuery)] struct Lorem { ipsum: u32 }
+//! # use derive_builder::WebApiGen;
+//! # #[derive(WebApiGen)] struct Lorem { ipsum: u32 }
 //! # fn try_main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let geek = true;
 //! let mut builder = LoremBuilder::default();
@@ -161,9 +161,9 @@
 //! The types of skipped fields must implement `Default`.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! struct HiddenField {
 //!     setter_present: u32,
 //!     #[builder(setter(skip))]
@@ -184,9 +184,9 @@
 //! as `Option<T>`.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! struct SetterOptOut {
 //!     #[builder(setter(custom))]
 //!     custom_setter: u32,
@@ -218,9 +218,9 @@
 //! You can override this:
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! #[builder(name = "FooConstructor")]
 //! struct Foo { }
 //!
@@ -248,9 +248,9 @@
 //! `#[builder(setter(into))]` to either a field or the whole struct.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! struct Lorem {
 //!     #[builder(setter(into))]
 //!     pub ipsum: String,
@@ -272,9 +272,9 @@
 //! `#[builder(setter(strip_option))]` to either a single field or the whole struct.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! struct Lorem {
 //!     #[builder(setter(into, strip_option))]
 //!     pub ipsum: Option<String>,
@@ -306,15 +306,15 @@
 //! to add `#![feature(try_from)]` to your crate to use it.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! # use derive_builder::WebApiGen;
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! #[builder(try_setter, setter(into))]
 //! struct Lorem {
 //!     pub name: String,
 //!     pub ipsum: u8,
 //! }
 //!
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! struct Ipsum {
 //!     #[builder(try_setter, setter(into, name = "foo"))]
 //!     pub dolor: u8,
@@ -345,9 +345,9 @@
 //! The expression will be evaluated with each call to `build`.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! struct Lorem {
 //!     #[builder(default = "42")]
 //!     pub ipsum: u32,
@@ -378,9 +378,9 @@
 //! [`Default`]: https://doc.rust-lang.org/std/default/trait.Default.html
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! # #[derive(PageQuery, PartialEq, Debug)]
+//! # #[derive(WebApiGen, PartialEq, Debug)]
 //! struct Lorem {
 //!     ipsum: String,
 //!     // Custom defaults can delegate to helper methods
@@ -418,9 +418,9 @@
 //! ## Generic Structs
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Debug, PartialEq, Default, Clone)]
+//! #[derive(WebApiGen, Debug, PartialEq, Default, Clone)]
 //! struct GenLorem<T: Clone> {
 //!     ipsum: &'static str,
 //!     dolor: T,
@@ -452,9 +452,9 @@
 //! the `Ok` variant is not used by the `build` method.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! #[builder(build_fn(validate = "Self::validate"))]
 //! struct Lorem {
 //!     pub ipsum: u8,
@@ -492,9 +492,9 @@
 //! You can derive additional traits on the builder, including traits defined by other crates:
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery, Clone)]
+//! #[derive(WebApiGen, Clone)]
 //! #[builder(derive(Debug, PartialEq, Eq))]
 //! pub struct Lorem {
 //!     foo: u8,
@@ -522,9 +522,9 @@
 //! those used by Serde, Diesel, or others.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! struct Lorem {
 //!     /// `ipsum` may be any `String` (be creative).
 //!     ipsum: String,
@@ -549,9 +549,9 @@
 //! - `builder_setter_attr` adds attributes to the setter in the `impl` block.
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
+//! # use derive_builder::WebApiGen;
 //! #
-//! #[derive(PageQuery)]
+//! #[derive(WebApiGen)]
 //! #[builder(derive(serde::Serialize))]
 //! #[builder_struct_attr(serde(rename_all = "camelCase"))]
 //! struct Lorem {
@@ -596,9 +596,9 @@
 //!
 //! Alternatively, you can specify your own error type:
 //! ```rust
-//! # use derive_builder::{PageQuery, UninitializedFieldError};
+//! # use derive_builder::{WebApiGen, UninitializedFieldError};
 //! #
-//! #[derive(PageQuery, Debug, PartialEq)]
+//! #[derive(WebApiGen, Debug, PartialEq)]
 //! #[builder(build_fn(error = "OurLoremError"))]
 //! struct Lorem {
 //!     pub ipsum: u32,
@@ -621,8 +621,8 @@
 //! Instead of having an `Option`, you can have whatever type you like:
 //!
 //! ```rust
-//! # use derive_builder::PageQuery;
-//! #[derive(Debug, PartialEq, Default, PageQuery, Clone)]
+//! # use derive_builder::WebApiGen;
+//! #[derive(Debug, PartialEq, Default, WebApiGen, Clone)]
 //! #[builder(derive(Debug, PartialEq))]
 //! struct Lorem {
 //!     #[builder(setter(into), field(ty = "u32"))]
@@ -698,7 +698,7 @@ extern crate derive_builder_macro;
 
 mod error;
 
-pub use derive_builder_macro::PageQuery;
+pub use derive_builder_macro::WebApiGen;
 
 #[doc(inline)]
 pub use error::UninitializedFieldError;
