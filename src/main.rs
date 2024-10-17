@@ -18,7 +18,7 @@ mod api_auth;
 mod api_doc;
 pub mod contracts;
 mod controller;
-mod domain;
+pub mod domain;
 pub mod models;
 mod scheduled_task;
 pub mod schema;
@@ -78,7 +78,7 @@ async fn set_scheduler() {
     sched
         .add(
             Job::new("1/10 * * * * *", |_uuid, _l| {
-                println!("I run every 10 seconds");
+                // println!("I run every 10 seconds");
             })
             .expect("cannot create job"),
         )

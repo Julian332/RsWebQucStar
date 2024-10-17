@@ -2,6 +2,7 @@ pub mod group;
 pub(crate) mod permission;
 pub mod user;
 
+use diesel::QueryableByName;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -15,6 +16,11 @@ pub struct PageParam<T: Default> {
     pub page_size: i64,
     pub order_column: String,
     pub is_desc: bool,
+}
+#[derive(QueryableByName)]
+pub struct Count {
+    #[sql_type = "diesel::sql_types::BigInt"]
+    pub count: i64,
 }
 
 impl<T: Default> Default for PageParam<T> {
@@ -35,7 +41,7 @@ pub struct PageRes<T: Default, TBuilder: Default> {
     pub page_no: i64,
     pub page_size: i64,
     pub records: Vec<T>,
-    pub total_count: i64,
+    pub total_page: i64,
     pub filters: TBuilder,
 }
 
@@ -76,7 +82,7 @@ impl<T: Default, TBuilder: Default> PageRes<T, TBuilder> {
             page_no: param.page_no,
             page_size: param.page_size,
             records,
-            total_count: -1,
+            total_page: -1,
             filters: param.filters,
         }
     }
@@ -85,12 +91,22 @@ impl<T: Default, TBuilder: Default> PageRes<T, TBuilder> {
         records: Vec<T>,
         total_count: i64,
     ) -> PageRes<T, TBuilder> {
-        PageRes {
-            page_no: param.page_no,
-            page_size: param.page_size,
-            records,
-            total_count,
-            filters: param.filters,
+        if total_count % param.page_size == 0 {
+            PageRes {
+                page_no: param.page_no,
+                page_size: param.page_size,
+                records,
+                total_page: total_count / param.page_size,
+                filters: param.filters,
+            }
+        } else {
+            PageRes {
+                page_no: param.page_no,
+                page_size: param.page_size,
+                records,
+                total_page: total_count / param.page_size + 1,
+                filters: param.filters,
+            }
         }
     }
 }
