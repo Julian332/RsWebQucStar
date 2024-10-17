@@ -177,11 +177,13 @@ impl<'a> ToTokens for Builder<'a> {
                 let de_trait: Path = parse_quote!(Deserialize);
                 let se_trait: Path = parse_quote!(Serialize);
                 let json_schema_trait: Path = parse_quote!(JsonSchema);
+                let default_trait: Path = parse_quote!(Default);
 
                 let mut traits: Punctuated<&Path, Token![,]> = Default::default();
                 traits.push(&de_trait);
                 traits.push(&se_trait);
                 traits.push(&json_schema_trait);
+                traits.push(&default_trait);
                 if self.must_derive_clone {
                     traits.push(&clone_trait);
                 }

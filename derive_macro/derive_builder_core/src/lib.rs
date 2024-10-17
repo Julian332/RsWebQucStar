@@ -153,7 +153,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
 
 
         pub mod web {
-            use crate::controller::{PageParam2, PageRes};
+            use crate::controller::{PageParam, PageRes};
             use super::*;
             use crate::api_doc::extractors::Json;
             use axum::extract::State;
@@ -218,7 +218,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
 
             pub async fn get_entity_page(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-                Json(page): Json<PageParam2<#builder_ident>>,
+                Json(page): Json<PageParam<#builder_ident>>,
             ) -> Result<Json<PageRes<#model, #builder_ident>>, String> {
                 let mut connection = pool.get().unwrap();
                 let off_lim = page.get_offset_limit();
@@ -250,7 +250,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                         .expect("Error loading page");
                 }
 
-                let page_res = PageRes::from_param_records2(page, res);
+                let page_res = PageRes::from_param_records(page, res);
                 Ok(Json(page_res))
             }
         }

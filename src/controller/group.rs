@@ -5,18 +5,11 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Queryable,
-    Debug,
-    Selectable,
-    Serialize,
-    Deserialize,
-    JsonSchema,
-    Default,
-    AsChangeset,
-    Insertable,
+    Queryable, Debug, Selectable, Serialize, Deserialize, JsonSchema, AsChangeset, Insertable,
 )]
 #[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[serde(default)]
 pub struct NewGroup {
     pub name: String,
     pub remark: Option<String>,
@@ -25,6 +18,20 @@ pub struct NewGroup {
     pub create_by: i64,
     pub update_by: Option<i64>,
     pub is_delete: bool,
+}
+
+impl Default for NewGroup {
+    fn default() -> Self {
+        NewGroup {
+            name: "name".to_string(),
+            remark: None,
+            update_time: None,
+            create_time: Default::default(),
+            create_by: 0,
+            update_by: None,
+            is_delete: false,
+        }
+    }
 }
 
 #[derive(
