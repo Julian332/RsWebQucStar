@@ -16,6 +16,15 @@ pub struct PageParam<T> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
+pub struct PageParam2<T> {
+    pub filters: T,
+    pub page_no: i64,
+    pub page_size: i64,
+    pub order_column: String,
+    pub is_desc: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, JsonSchema)]
 pub struct PageRes<T, TBuilder> {
     pub page_no: i64,
     pub page_size: i64,
@@ -33,6 +42,12 @@ pub enum Compare {
     GreaterAndEqual,
     Less,
     LessAndEqual,
+}
+
+#[derive(Deserialize, Serialize, JsonSchema, Clone, Default)]
+pub struct Filter<T> {
+    pub compare: Compare,
+    pub compare_value: T,
 }
 
 impl Compare {
@@ -59,6 +74,18 @@ impl<T, TBuilder> PageRes<T, TBuilder> {
             filters: param.filters,
         }
     }
+    pub fn from_param_records2(
+        param: PageParam2<TBuilder>,
+        records: Vec<T>,
+    ) -> PageRes<T, TBuilder> {
+        PageRes {
+            page_no: param.page_no,
+            page_size: param.page_size,
+            records,
+            total_count: -1,
+            filters: Some(param.filters),
+        }
+    }
     pub fn from_param_records_count(
         param: PageParam<TBuilder>,
         records: Vec<T>,
@@ -75,6 +102,12 @@ impl<T, TBuilder> PageRes<T, TBuilder> {
 }
 
 impl<T> PageParam<T> {
+    pub fn get_offset_limit(&self) -> (i64, i64) {
+        ((self.page_no - 1) * self.page_size, self.page_size)
+    }
+}
+
+impl<T> PageParam2<T> {
     pub fn get_offset_limit(&self) -> (i64, i64) {
         ((self.page_no - 1) * self.page_size, self.page_size)
     }

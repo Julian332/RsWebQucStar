@@ -83,24 +83,24 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         let ident = field.field_ident();
         filters.push(quote!(
                     if let Some(filter_param) = filter.#ident {
-                        match filter_param.0 {
+                        match filter_param.compare {
                             Compare::NotEqual => {
-                                statement = statement.filter(crate::schema::#schema::#ident.ne(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.ne(filter_param.compare_value));
                             }
                             Compare::Equal => {
-                                statement = statement.filter(crate::schema::#schema::#ident.eq(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.eq(filter_param.compare_value));
                             }
                             Compare::Greater => {
-                                statement = statement.filter(crate::schema::#schema::#ident.gt(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.gt(filter_param.compare_value));
                             }
                             Compare::GreaterAndEqual => {
-                                statement = statement.filter(crate::schema::#schema::#ident.ge(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.ge(filter_param.compare_value));
                             }
                             Compare::Less => {
-                                statement = statement.filter(crate::schema::#schema::#ident.lt(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.lt(filter_param.compare_value));
                             }
                             Compare::LessAndEqual => {
-                                statement = statement.filter(crate::schema::#schema::#ident.le(filter_param.1));
+                                statement = statement.filter(crate::schema::#schema::#ident.le(filter_param.compare_value));
                             }
                         }
                     }
@@ -119,6 +119,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         use diesel::r2d2::{ConnectionManager, Pool};
         use diesel::{ PgConnection};
         use crate::controller::Compare;
+        use crate::controller::Filter;
 
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
             ApiRouter::new()
@@ -152,7 +153,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
 
 
         pub mod web {
-            use crate::controller::{PageParam, PageRes};
+            use crate::controller::{PageParam2, PageRes};
             use super::*;
             use crate::api_doc::extractors::Json;
             use axum::extract::State;
@@ -217,18 +218,18 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
 
             pub async fn get_entity_page(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
-                Json(page): Json<PageParam<#builder_ident>>,
+                Json(page): Json<PageParam2<#builder_ident>>,
             ) -> Result<Json<PageRes<#model, #builder_ident>>, String> {
                 let mut connection = pool.get().unwrap();
                 let off_lim = page.get_offset_limit();
 
                 let mut statement = crate::schema::#schema::dsl::#schema.into_boxed();
-                if let Some(filter) = page.filters.clone() {
+                let filter = page.filters.clone();
                     #(#filters)*
-                }
+
 
                 let res;
-                let x_table = diesel_dynamic_schema::table(stringify!(crate::schema::#schema));
+                let x_table = diesel_dynamic_schema::table(stringify!(#schema));
 
                 let order_column = x_table.column::<diesel::sql_types::Text, _>(page.order_column.clone());
                 if page.is_desc {
@@ -249,7 +250,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                         .expect("Error loading page");
                 }
 
-                let page_res = PageRes::from_param_records(page, res);
+                let page_res = PageRes::from_param_records2(page, res);
                 Ok(Json(page_res))
             }
         }
