@@ -43,6 +43,14 @@ async fn main() {
             "/users",
             controller::user::web_routes(connection_pool.clone()),
         )
+        .nest_api_service(
+            "/groups",
+            controller::group::web_routes(connection_pool.clone()),
+        )
+        .nest_api_service(
+            "/permissions",
+            controller::permission::web_routes(connection_pool.clone()),
+        )
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)
         .layer(Extension(Arc::new(api)))

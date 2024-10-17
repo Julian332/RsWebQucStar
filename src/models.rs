@@ -3,23 +3,8 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-use chrono::{DateTime, Utc};
 use diesel::{Identifiable, Queryable, Selectable};
 use serde::Deserialize;
-
-#[derive(Queryable, Debug, Identifiable, Selectable)]
-#[diesel(table_name = crate::schema::groups)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Group {
-    pub id: i64,
-    pub name: String,
-    pub remark: Option<String>,
-    pub update_time: Option<DateTime<Utc>>,
-    pub create_time: DateTime<Utc>,
-    pub create_by: i64,
-    pub update_by: Option<i64>,
-    pub is_delete: bool,
-}
 
 #[derive(Queryable, Debug, Identifiable, Selectable)]
 #[diesel(primary_key(group_id, permission_id))]
@@ -28,18 +13,4 @@ pub struct Group {
 pub struct GroupsPermission {
     pub group_id: i64,
     pub permission_id: i64,
-}
-
-#[derive(Queryable, Debug, Clone, Eq, PartialEq, Hash, Selectable)]
-#[diesel(table_name = crate::schema::permissions)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Permission {
-    pub id: i64,
-    pub name: String,
-    pub remark: Option<String>,
-    pub update_time: Option<DateTime<Utc>>,
-    pub create_time: DateTime<Utc>,
-    pub create_by: i64,
-    pub update_by: Option<i64>,
-    pub is_delete: bool,
 }

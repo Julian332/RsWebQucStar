@@ -1,3 +1,5 @@
+pub mod group;
+pub(crate) mod permission;
 pub mod user;
 
 use schemars::JsonSchema;
