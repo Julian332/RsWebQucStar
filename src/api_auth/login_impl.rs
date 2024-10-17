@@ -1,6 +1,6 @@
+use crate::api_doc::errors::AppError;
 use crate::controller::user::{NewUser, User};
 use crate::models::Permission;
-use crate::openapi::errors::AppError;
 use crate::schema::groups::dsl::groups;
 use crate::schema::groups_permissions::dsl::groups_permissions;
 use crate::schema::groups_permissions::{group_id, permission_id};

@@ -6,25 +6,27 @@
 use std::error::Error;
 use std::str::FromStr;
 
-use crate::contract::readonly_http_provider;
-use crate::contract::uni_router2::{uni_router2_addr, UNI_ROUTER2};
+use crate::contracts::readonly_http_provider;
+use crate::contracts::uni_factory::{uni_factory_addr, UNI_FACTORY};
+
 use alloy::primitives::Address;
+
 use alloy::sol;
 
 // Codegen from ABI file to interact with the contract.
 sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
-    UNI_FACTORY,
-    "src/contract/abis/uni_factory.json"
+    UNI_PAIR,
+    "src/contracts/abis/uni_pair.json"
 );
 
-pub async fn uni_factory_addr() -> Address {
-    let uni_router2 = UNI_ROUTER2::new(uni_router2_addr(), readonly_http_provider());
-    uni_router2
-        .factory()
+pub async fn get_pair(token_a: Address, token_b: Address) -> Address {
+    let uni_factory = UNI_FACTORY::new(uni_factory_addr().await, readonly_http_provider());
+    uni_factory
+        .getPair(token_a, token_b)
         .call()
         .await
-        .expect("uni_router2.factory() RPC call failed")
+        .expect("uni_factory.getPair rpc error")
         ._0
 }

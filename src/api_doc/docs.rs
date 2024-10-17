@@ -11,7 +11,7 @@ use aide::{
 };
 use axum::{response::IntoResponse, Extension};
 
-use crate::openapi::extractors::Json;
+use crate::api_doc::extractors::Json;
 
 pub fn docs_routes() -> ApiRouter {
     // We infer the return types for these routes

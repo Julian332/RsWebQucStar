@@ -4,7 +4,7 @@ use axum_macros::{FromRequest, FromRequestParts};
 use schemars::JsonSchema;
 use serde::Serialize;
 
-use crate::openapi::errors::AppError;
+use crate::api_doc::errors::AppError;
 
 #[derive(FromRequest, OperationIo, JsonSchema)]
 #[from_request(via(axum_jsonschema::Json), rejection(AppError))]

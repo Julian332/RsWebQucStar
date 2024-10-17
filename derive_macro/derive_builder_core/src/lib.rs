@@ -110,7 +110,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
     let f = quote!(
         use crate::api_auth::login_impl::AuthBackend;
         use crate::controller::LOGIN_URL;
-        use crate::openapi::{default_resp_docs_with_exam, empty_resp_docs};
+        use crate::api_doc::{default_resp_docs_with_exam, empty_resp_docs};
         use crate::schema::#schema::dsl::#schema;
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
@@ -154,7 +154,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         pub mod web {
             use crate::controller::{PageParam, PageRes};
             use super::*;
-            use crate::openapi::extractors::Json;
+            use crate::api_doc::extractors::Json;
             use axum::extract::State;
             use diesel::r2d2::{ConnectionManager, Pool};
             use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};

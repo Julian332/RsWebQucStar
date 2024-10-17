@@ -6,8 +6,8 @@ use schemars::JsonSchema;
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::openapi::errors::AppError;
-use crate::openapi::extractors::Json;
+use crate::api_doc::errors::AppError;
+use crate::api_doc::extractors::Json;
 
 pub mod docs;
 pub mod errors;
@@ -31,8 +31,8 @@ pub fn empty_resp_docs(op: TransformOperation) -> TransformOperation {
     // .response::<200,Json<Resp>>()
 }
 pub fn api_docs(api: TransformOpenApi) -> TransformOpenApi {
-    api.title("Aide axum Open API")
-        .summary("An example Todo application")
+    api.title("RsWebQuicStar")
+        .summary("RsWebQuicStar")
         .description(include_str!("../README.md"))
         .tag(Tag {
             name: "todo".into(),

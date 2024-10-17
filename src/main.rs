@@ -2,27 +2,27 @@ use std::env;
 use std::sync::{Arc, OnceLock};
 
 use crate::api_auth::login_impl::AuthBackend;
-use crate::openapi::{api_docs, fallback};
+use crate::api_doc::{api_docs, fallback};
 use aide::axum::ApiRouter;
 use aide::openapi::OpenApi;
+use api_doc::docs::docs_routes;
 use axum::Extension;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
-use openapi::docs::docs_routes;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 mod api_auth;
-pub mod apis;
-pub mod contract;
+mod api_doc;
+pub mod contracts;
 mod controller;
 mod domain;
 pub mod models;
-mod openapi;
+mod scheduled_task;
 pub mod schema;
-mod task;
+pub mod third_party_api;
 
 static STATIC_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
 

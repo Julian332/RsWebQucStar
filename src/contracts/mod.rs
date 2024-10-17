@@ -1,5 +1,5 @@
-use crate::contract::uni_pair::{get_pair, UNI_PAIR};
-use crate::contract::usdt::usdt_addr;
+use crate::contracts::uni_pair::{get_pair, UNI_PAIR};
+use crate::contracts::usdt::usdt_addr;
 use alloy::network::{Ethereum, EthereumWallet, TransactionBuilder};
 use alloy::primitives::aliases::U112;
 use alloy::primitives::{Address, TxHash, U256};

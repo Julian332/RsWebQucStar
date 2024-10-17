@@ -22,9 +22,10 @@ pub struct PageRes<T, TBuilder> {
     pub filters: Option<TBuilder>,
 }
 
-#[derive(Deserialize, Serialize, JsonSchema, Clone)]
+#[derive(Deserialize, Serialize, JsonSchema, Clone, Default)]
 pub enum Compare {
     NotEqual,
+    #[default]
     Equal,
     Greater,
     GreaterAndEqual,

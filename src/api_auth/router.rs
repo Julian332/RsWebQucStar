@@ -1,7 +1,7 @@
 use crate::api_auth::login_impl::{AuthBackend, Credentials};
+use crate::api_doc::default_resp_docs_with_exam;
+use crate::api_doc::extractors::Json;
 use crate::controller::user::User;
-use crate::openapi::default_resp_docs_with_exam;
-use crate::openapi::extractors::Json;
 use aide::axum::routing::post_with;
 use aide::axum::{ApiRouter, IntoApiResponse};
 use axum::http::StatusCode;

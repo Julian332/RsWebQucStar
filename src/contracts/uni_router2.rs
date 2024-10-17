@@ -15,7 +15,7 @@ sol!(
     #[allow(missing_docs)]
     #[sol(rpc)]
     UNI_ROUTER2,
-    "src/contract/abis/uni_router2.json"
+    "src/contracts/abis/uni_router2.json"
 );
 
 pub fn uni_router2_addr() -> Address {
