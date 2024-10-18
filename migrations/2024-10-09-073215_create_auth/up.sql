@@ -66,8 +66,6 @@ CREATE TYPE sell_buy AS ENUM ('sell', 'buy');
 
 
 
-
-
 INSERT INTO groups (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
 VALUES (-1, 'common_user', null, null, now(), -2, null, false);
 
@@ -76,17 +74,53 @@ VALUES (-2, 'super_admin', null, null, now(), -2, null, false);
 
 
 
-INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (1, 'common_read', null, null, now(), -2, null, false);
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('common_read', null, null, now(), -2, null, false);
 
-INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (2, 'common_add', null, null, now(), -2, null, false);
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('common_add', null, null, now(), -2, null, false);
 
-INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (3, 'common_delete', null, null, now(), -2, null, false);
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('common_delete', null, null, now(), -2, null, false);
 
-INSERT INTO permissions (id, name, remark, update_time, create_time, create_by, update_by, is_delete)
-VALUES (4, 'common_update', null, null, now(), -2, null, false);
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('common_update', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('permissions_read', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('permissions_add', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('permissions_delete', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('permissions_update', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('groups_read', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('groups_add', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('groups_delete', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('groups_update', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('users_read', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('users_add', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('users_delete', null, null, now(), -2, null, false);
+
+INSERT INTO permissions (name, remark, update_time, create_time, create_by, update_by, is_delete)
+VALUES ('users_update', null, null, now(), -2, null, false);
 
 
 

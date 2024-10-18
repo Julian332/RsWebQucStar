@@ -157,9 +157,26 @@ impl AuthnBackend for AuthBackend {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct AuthPermission {
+    pub name: String,
+}
+
+impl From<&str> for AuthPermission {
+    fn from(name: &str) -> Self {
+        AuthPermission {
+            name: name.to_string(),
+        }
+    }
+}
+impl From<String> for AuthPermission {
+    fn from(name: String) -> Self {
+        AuthPermission { name }
+    }
+}
 #[async_trait]
 impl AuthzBackend for AuthBackend {
-    type Permission = Permission;
+    type Permission = AuthPermission;
 
     async fn get_group_permissions(
         &self,
@@ -174,7 +191,7 @@ impl AuthzBackend for AuthBackend {
             .select(Permission::as_select())
             .load(conn)
         {
-            Ok(res) => Ok(res.into_iter().collect()),
+            Ok(res) => Ok(res.into_iter().map(|x| x.name.into()).collect()),
             Err(e) => Err(e.into()),
         }
     }

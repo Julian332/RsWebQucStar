@@ -25,6 +25,7 @@ pub mod schema;
 pub mod third_party_api;
 
 static STATIC_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
+//todo permission
 
 #[tokio::main]
 async fn main() {

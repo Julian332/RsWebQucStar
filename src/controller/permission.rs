@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use derive_builder::WebApiGen;
-use diesel::{AsChangeset, Identifiable, Insertable, Queryable, Selectable};
+use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -20,10 +20,8 @@ use serde::{Deserialize, Serialize};
 pub struct NewPermission {
     pub name: String,
     pub remark: Option<String>,
-    pub update_time: Option<DateTime<Utc>>,
     pub create_time: DateTime<Utc>,
     pub create_by: i64,
-    pub update_by: Option<i64>,
     pub is_delete: bool,
 }
 

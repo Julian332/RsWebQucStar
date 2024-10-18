@@ -121,38 +121,48 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         use aide::axum::routing::{delete_with, get_with, post_with, put_with};
         use aide::axum::ApiRouter;
         use axum::extract::{Path};
-        use axum_login::login_required;
         use diesel::r2d2::{ConnectionManager, Pool};
         use diesel::{ PgConnection};
         use crate::controller::Compare;
         use crate::controller::Filter;
-
+        use axum_login::permission_required;
         pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
-            ApiRouter::new()
-                .api_route(
-                    "/create_entity",
-                    post_with(web::create_entity, empty_resp_docs),
-                    // .get_with(list_todos, empty_resp_docs),
-                )
+            let router_add = ApiRouter::new().api_route(
+                "/create_entity",
+                post_with(web::create_entity, empty_resp_docs),
+            );
+            let router_read = ApiRouter::new()
                 .api_route(
                     "/get_entity_by_id/:id",
-                    get_with(web::get_entity_by_id, default_resp_docs_with_exam::<#model>),
-                    // .delete_with(delete_todo, empty_resp_docs),
-                )
-                .api_route(
-                    "/update_entity_by_id/:id",
-                    put_with(web::update_entity_by_id, default_resp_docs_with_exam::<#model>),
-                )
-                .api_route(
-                    "/delete_entity_by_id/:id",
-                    delete_with(web::delete_entity_by_id, default_resp_docs_with_exam::<#model>),
+                    get_with(
+                        web::get_entity_by_id,
+                        default_resp_docs_with_exam::<#model>,
+                    ),
                 )
                 .api_route(
                     "/get_entity_page",
                     post_with(web::get_entity_page, empty_resp_docs),
-                )
+                );
+            let router_update = ApiRouter::new().api_route(
+                "/update_entity_by_id/:id",
+                put_with(
+                    web::update_entity_by_id,
+                    default_resp_docs_with_exam::<#model>,
+                ),
+            );
+            let router_delete = ApiRouter::new().api_route(
+                "/delete_entity_by_id/:id",
+                delete_with(
+                    web::delete_entity_by_id,
+                    default_resp_docs_with_exam::<#model>,
+                ),
+            );
+            router_add
+                .route_layer(permission_required!(AuthBackend, "common_add"))
+                .merge(router_read.route_layer(permission_required!(AuthBackend, "common_read")))
+                .merge(router_delete.route_layer(permission_required!(AuthBackend, "common_delete")))
+                .merge(router_update.route_layer(permission_required!(AuthBackend, "common_update")))
                 .with_state(conn_pool)
-                .route_layer(login_required!(AuthBackend))
         }
 
         // web_fn_gen!(#schema, #new_model, #model);
@@ -233,6 +243,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                 let mut count_statement = crate::schema::#schema::dsl::#schema.into_boxed();
                 let filter = page.filters.clone();
                     #(#filters)*
+                count_statement = count_statement.filter(crate::schema::#schema::is_delete.eq(false));
 
                 let total_count = count_statement.count().get_result::<i64>(&mut connection).expect("get count failer");
 
@@ -240,6 +251,8 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                 let x_table = diesel_dynamic_schema::table(stringify!(#schema));
 
                 let order_column = x_table.column::<diesel::sql_types::Text, _>(page.order_column.clone());
+                statement = statement.filter(crate::schema::#schema::is_delete.eq(false));
+
                 if page.is_desc {
                     res = statement
                         .offset(off_lim.0)
