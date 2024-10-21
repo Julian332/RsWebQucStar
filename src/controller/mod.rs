@@ -1,6 +1,6 @@
 pub mod group;
 pub mod group_permission;
-pub(crate) mod permission;
+pub mod permission;
 pub mod user;
 
 use diesel::QueryableByName;

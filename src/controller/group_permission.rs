@@ -54,7 +54,7 @@ use axum::extract::Path;
 use axum_login::permission_required;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
-pub(crate) fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
+pub fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter {
     let router_add = ApiRouter::new().api_route(
         "/create_entity",
         post_with(web::create_entity, empty_resp_docs),

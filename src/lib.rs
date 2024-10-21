@@ -1,12 +1,8 @@
 use std::env;
-use std::sync::{Arc, OnceLock};
+use std::sync::OnceLock;
 
 use crate::api_auth::login_impl::AuthBackend;
-use crate::api_doc::{api_docs, fallback};
-use aide::axum::ApiRouter;
-use aide::openapi::OpenApi;
-use api_doc::docs::docs_routes;
-use axum::Extension;
+
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder};
@@ -14,68 +10,20 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
 use tokio_cron_scheduler::{Job, JobScheduler};
 
-mod api_auth;
-mod api_doc;
+pub mod api_auth;
+pub mod api_doc;
 pub mod contracts;
-mod controller;
+pub mod controller;
 pub mod domain;
 pub mod models;
-mod scheduled_task;
+pub mod scheduled_task;
 pub mod schema;
 pub mod third_party_api;
 
-static STATIC_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
+pub static GLOBAL_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> =
+    OnceLock::new();
 
-#[tokio::main]
-async fn main() {
-    tracing_subscriber::fmt::init();
-    set_env();
-    set_api_doc();
-
-    let connection_pool = get_connection_pool();
-    STATIC_CONNECTION_POOL.get_or_init(|| connection_pool.clone());
-    set_scheduler().await;
-    let mut api = OpenApi::default();
-
-    let app = ApiRouter::new()
-        .nest_api_service("/auth", api_auth::router::router())
-        .nest_api_service(
-            "/users",
-            controller::user::web_routes(connection_pool.clone()),
-        )
-        .nest_api_service(
-            "/groups",
-            controller::group::web_routes(connection_pool.clone()),
-        )
-        .nest_api_service(
-            "/permissions",
-            controller::permission::web_routes(connection_pool.clone()),
-        )
-        .nest_api_service(
-            "/group_permission",
-            crate::controller::group_permission::web_routes(connection_pool.clone()),
-        )
-        .nest_api_service("/docs", docs_routes())
-        .finish_api_with(&mut api, api_docs)
-        .layer(Extension(Arc::new(api)))
-        .fallback(fallback)
-        .with_state(connection_pool.clone())
-        .merge(api_auth::router::router())
-        .layer(get_auth_layer(connection_pool.clone()));
-
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(format!(
-        "0.0.0.0:{}",
-        env::var("SERVER_PORT").unwrap_or("4090".to_string())
-    ))
-    .await
-    .expect("Can not bind to port");
-    axum::serve(listener, app)
-        .await
-        .expect("Can not run server");
-}
-
-async fn set_scheduler() {
+pub async fn set_scheduler() {
     let sched = JobScheduler::new()
         .await
         .expect("cannot create jobs scheduler");
@@ -92,14 +40,14 @@ async fn set_scheduler() {
     sched.start().await.expect("cannot start jobs scheduler");
 }
 
-fn set_api_doc() {
+pub fn set_api_doc() {
     aide::gen::on_error(|error| {
         println!("{error}");
     });
     aide::gen::extract_schemas(true);
 }
 
-fn get_auth_layer(
+pub fn get_auth_layer(
     connection_pool: Pool<ConnectionManager<PgConnection>>,
 ) -> AuthManagerLayer<AuthBackend, MemoryStore> {
     let session_store = MemoryStore::default();
@@ -111,7 +59,7 @@ fn get_auth_layer(
     AuthManagerLayerBuilder::new(backend, session_layer).build()
 }
 
-fn set_env() {
+pub fn set_env() {
     let profile = get_build_profile_name();
     tracing::info!("profile :{} is active", profile);
     match profile.as_str() {
@@ -136,7 +84,7 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
         .expect("Could not build connection pool")
 }
 
-fn get_build_profile_name() -> String {
+pub fn get_build_profile_name() -> String {
     // The profile name is always the 3rd last part of the path (with 1 based indexing).
     // e.g. /code/core/target/cli/build/my-build-info-9f91ba6f99d7a061/out
     std::env!("OUT_DIR")

@@ -1,5 +1,5 @@
 pub mod login_impl;
-pub(crate) mod router;
+pub mod router;
 
 #[test]
 pub fn test() {

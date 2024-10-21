@@ -71,7 +71,7 @@ impl AuthUser for User {
 }
 
 impl AuthBackend {
-    pub(crate) fn new(pool: Pool<ConnectionManager<PgConnection>>) -> Self {
+    pub fn new(pool: Pool<ConnectionManager<PgConnection>>) -> Self {
         Self { db: pool }
     }
 }
