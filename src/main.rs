@@ -25,7 +25,6 @@ pub mod schema;
 pub mod third_party_api;
 
 static STATIC_CONNECTION_POOL: OnceLock<Pool<ConnectionManager<PgConnection>>> = OnceLock::new();
-//todo permission
 
 #[tokio::main]
 async fn main() {
@@ -51,6 +50,10 @@ async fn main() {
         .nest_api_service(
             "/permissions",
             controller::permission::web_routes(connection_pool.clone()),
+        )
+        .nest_api_service(
+            "/group_permission",
+            crate::controller::group_permission::web_routes(connection_pool.clone()),
         )
         .nest_api_service("/docs", docs_routes())
         .finish_api_with(&mut api, api_docs)
