@@ -1,3 +1,4 @@
+use crate::impl_from;
 use aide::OperationIo;
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_jsonschema::JsonSchemaRejection;
@@ -5,9 +6,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
-
 /// A default error response for most API errors.
 #[derive(Debug, Serialize, JsonSchema, Deserialize, OperationIo)]
 pub struct AppError {
@@ -21,6 +21,9 @@ pub struct AppError {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error_details: Option<Value>,
 }
+
+impl_from!(diesel::result::Error);
+impl_from!(r2d2::Error);
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -67,39 +70,6 @@ impl From<JsonSchemaRejection> for AppError {
             JsonSchemaRejection::Schema(s) => {
                 Self::new("invalid request").with_details(json!({ "schema_validation": s }))
             }
-        }
-    }
-}
-
-impl From<Box<dyn Error>> for AppError {
-    fn from(value: Box<dyn Error>) -> Self {
-        AppError {
-            error: format!("{}", value),
-            error_id: Default::default(),
-            status: Default::default(),
-            error_details: None,
-        }
-    }
-}
-
-impl From<Box<dyn Display>> for AppError {
-    fn from(value: Box<dyn Display>) -> Self {
-        AppError {
-            error: format!("{}", value),
-            error_id: Default::default(),
-            status: Default::default(),
-            error_details: None,
-        }
-    }
-}
-
-impl From<diesel::result::Error> for AppError {
-    fn from(value: diesel::result::Error) -> Self {
-        AppError {
-            error: format!("{}", value),
-            error_id: Default::default(),
-            status: Default::default(),
-            error_details: None,
         }
     }
 }

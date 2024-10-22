@@ -46,8 +46,8 @@ async fn main() {
         .layer(Extension(Arc::new(api)))
         .fallback(fallback)
         .with_state(connection_pool.clone())
-        .merge(api_auth::router::router())
         .layer(get_auth_layer(connection_pool.clone()));
+    println!("Example docs are accessible at http://127.0.0.1:5090/docs");
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind(format!(

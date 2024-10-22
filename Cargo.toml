@@ -19,6 +19,7 @@ axum-jsonschema = { version = "0.8.0", features = ["aide"] }
 
 diesel = { version = "2.2.2", features = ["postgres", "extras", ] }
 diesel-dynamic-schema = { version = "0.2.2" ,features = ["postgres"]}
+r2d2 = "0.8.10"
 
 dotenvy = "0.15.7"
 

@@ -65,3 +65,18 @@ pub async fn root() -> &'static str {
 pub async fn fallback(uri: Uri) -> (StatusCode, String) {
     (StatusCode::NOT_FOUND, format!("No route for {uri}"))
 }
+#[macro_export]
+macro_rules! impl_from {
+    ($error:path) => {
+        impl From<$error> for AppError {
+            fn from(value: $error) -> Self {
+                AppError {
+                    error: format!("error:::::::: {}", value),
+                    error_id: Default::default(),
+                    status: Default::default(),
+                    error_details: None,
+                }
+            }
+        }
+    };
+}

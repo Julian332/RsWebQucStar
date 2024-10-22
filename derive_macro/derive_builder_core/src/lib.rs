@@ -15,7 +15,7 @@
 //! [`derive_builder`]: https://!crates.io/crates/derive_builder
 //! [`derive_builder_core`]: https://!crates.io/crates/derive_builder_core
 
-#![deny(warnings, missing_docs)]
+// #![deny(warnings, missing_docs)]
 #![cfg_attr(test, recursion_limit = "100")]
 
 #[macro_use]
@@ -175,19 +175,19 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
             use axum::extract::State;
             use diesel::r2d2::{ConnectionManager, Pool};
             use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+            use crate::api_doc::errors::AppError;
 
 
             pub async fn create_entity(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
                 Json(new_entity): Json<#new_model>,
-            ) -> Result<Json<#model>, String> {
-                let mut connection = pool.get().unwrap();
+            ) -> Result<Json<#model>, AppError> {
+                let mut connection = pool.get()?;
 
                 let result = diesel::insert_into(#schema)
                     .values(new_entity)
                     .returning(#model::as_returning())
-                    .get_result(&mut connection)
-                    .expect("Error saving new entity");
+                    .get_result(&mut connection)?;
 
                 Ok(Json(result))
             }
@@ -196,47 +196,44 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
                 Path(id_param): Path<i64>,
                 Json(new): Json<#new_model>,
-            ) -> Result<Json<#model>, String> {
-                let mut connection = pool.get().unwrap();
+            ) -> Result<Json<#model>, AppError> {
+                let mut connection = pool.get()?;
                 let result = diesel::update(#schema.find(id_param))
                     .set(&new)
                     .returning(#model::as_returning())
-                    .get_result(&mut connection)
-                    .expect("Error update  entity");
+                    .get_result(&mut connection)?;
                 Ok(Json(result))
             }
 
             pub async fn get_entity_by_id(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
                 Path(id_param): Path<i64>,
-            ) -> Result<Json<#model>, String> {
-                let mut connection = pool.get().unwrap();
+            ) -> Result<Json<#model>, AppError> {
+                let mut connection = pool.get()?;
                 let result = #schema
                     .find(id_param)
                     .select(#model::as_select())
-                    .get_result(&mut connection)
-                    .expect("get entity by id failed");
+                    .get_result(&mut connection)?;
                 Ok(Json(result))
             }
 
             pub async fn delete_entity_by_id(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
                 Path(id_param): Path<i64>,
-            ) -> Result<Json<#model>, String> {
-                let mut connection = pool.get().unwrap();
+            ) -> Result<Json<#model>, AppError> {
+                let mut connection = pool.get()?;
                 let result = diesel::update(#schema.find(id_param))
                     .set(crate::schema::#schema::is_delete.eq(true))
                     .returning(#model::as_returning())
-                    .get_result(&mut connection)
-                    .expect("Error delete  entity");
+                    .get_result(&mut connection)?;
                 Ok(Json(result))
             }
 
             pub async fn get_entity_page(
                 State(pool): State<Pool<ConnectionManager<PgConnection>>>,
                 Json(page): Json<PageParam<#builder_ident>>,
-            ) -> Result<Json<PageRes<#model, #builder_ident>>, String> {
-                let mut connection = pool.get().unwrap();
+            ) -> Result<Json<PageRes<#model, #builder_ident>>, AppError> {
+                let mut connection = pool.get()?;
                 let off_lim = page.get_offset_limit();
 
                 let mut statement = crate::schema::#schema::dsl::#schema.into_boxed();
@@ -245,7 +242,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                     #(#filters)*
                 count_statement = count_statement.filter(crate::schema::#schema::is_delete.eq(false));
 
-                let total_count = count_statement.count().get_result::<i64>(&mut connection).expect("get count failer");
+                let total_count = count_statement.count().get_result::<i64>(&mut connection)?;
 
                 let res;
                 let x_table = diesel_dynamic_schema::table(stringify!(#schema));
@@ -259,16 +256,14 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
                         .limit(off_lim.1)
                         .order(order_column.desc())
                         .select(#model::as_select())
-                        .load(&mut connection)
-                        .expect("Error loading page");
+                        .load(&mut connection)?;
                 } else {
                     res = statement
                         .offset(off_lim.0)
                         .limit(off_lim.1)
                         .order(order_column.asc())
                         .select(#model::as_select())
-                        .load(&mut connection)
-                        .expect("Error loading page");
+                        .load(&mut connection)?;
                 }
 
                 let page_res = PageRes::from_param_records_count(page, res,total_count);

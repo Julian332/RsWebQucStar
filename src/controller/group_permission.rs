@@ -86,53 +86,52 @@ pub fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter
 }
 pub mod web {
     use super::*;
+    use crate::api_doc::errors::AppError;
     use crate::api_doc::extractors::Json;
     use crate::controller::{PageParam, PageRes};
     use axum::extract::State;
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::{ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+
     pub async fn create_entity(
         State(pool): State<Pool<ConnectionManager<PgConnection>>>,
         Json(new_entity): Json<NewGroupsPermission>,
-    ) -> Result<Json<GroupsPermission>, String> {
-        let mut connection = pool.get().unwrap();
+    ) -> Result<Json<GroupsPermission>, AppError> {
+        let mut connection = pool.get()?;
         let result = diesel::insert_into(groups_permissions)
             .values(new_entity)
             .returning(GroupsPermission::as_returning())
-            .get_result(&mut connection)
-            .expect("Error saving new entity");
+            .get_result(&mut connection)?;
         Ok(Json(result))
     }
 
     pub async fn get_entity_by_id(
         State(pool): State<Pool<ConnectionManager<PgConnection>>>,
         Path(id_param): Path<(i64, i64)>,
-    ) -> Result<Json<GroupsPermission>, String> {
-        let mut connection = pool.get().unwrap();
+    ) -> Result<Json<GroupsPermission>, AppError> {
+        let mut connection = pool.get()?;
         let result = groups_permissions
             .find(id_param)
             .select(GroupsPermission::as_select())
-            .get_result(&mut connection)
-            .expect("get entity by id failed");
+            .get_result(&mut connection)?;
         Ok(Json(result))
     }
     pub async fn delete_entity_by_id(
         State(pool): State<Pool<ConnectionManager<PgConnection>>>,
         Path(id_param): Path<(i64, i64)>,
-    ) -> Result<Json<GroupsPermission>, String> {
-        let mut connection = pool.get().unwrap();
+    ) -> Result<Json<GroupsPermission>, AppError> {
+        let mut connection = pool.get()?;
         let result = diesel::delete(groups_permissions.find(id_param))
             .returning(GroupsPermission::as_returning())
-            .get_result(&mut connection)
-            .expect("Error delete  entity");
+            .get_result(&mut connection)?;
 
         Ok(Json(result))
     }
     pub async fn get_entity_page(
         State(pool): State<Pool<ConnectionManager<PgConnection>>>,
         Json(page): Json<PageParam<GroupsPermissionBuilder>>,
-    ) -> Result<Json<PageRes<GroupsPermission, GroupsPermissionBuilder>>, String> {
-        let mut connection = pool.get().unwrap();
+    ) -> Result<Json<PageRes<GroupsPermission, GroupsPermissionBuilder>>, AppError> {
+        let mut connection = pool.get()?;
         let off_lim = page.get_offset_limit();
         let mut statement = crate::schema::groups_permissions::dsl::groups_permissions.into_boxed();
         let mut count_statement =
@@ -260,10 +259,7 @@ pub mod web {
                 }
             }
         }
-        let total_count = count_statement
-            .count()
-            .get_result::<i64>(&mut connection)
-            .expect("get count failer");
+        let total_count = count_statement.count().get_result::<i64>(&mut connection)?;
         let res;
         let x_table = diesel_dynamic_schema::table(stringify!(groups_permissions));
         let order_column = x_table.column::<diesel::sql_types::Text, _>(page.order_column.clone());
@@ -273,16 +269,14 @@ pub mod web {
                 .limit(off_lim.1)
                 .order(order_column.desc())
                 .select(GroupsPermission::as_select())
-                .load(&mut connection)
-                .expect("Error loading page");
+                .load(&mut connection)?;
         } else {
             res = statement
                 .offset(off_lim.0)
                 .limit(off_lim.1)
                 .order(order_column.asc())
                 .select(GroupsPermission::as_select())
-                .load(&mut connection)
-                .expect("Error loading page");
+                .load(&mut connection)?;
         }
         let page_res = PageRes::from_param_records_count(page, res, total_count);
         Ok(Json(page_res))
