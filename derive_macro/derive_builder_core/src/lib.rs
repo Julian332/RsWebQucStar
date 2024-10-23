@@ -168,7 +168,7 @@ pub fn builder_for_struct(ast: syn::DeriveInput) -> proc_macro2::TokenStream {
         // web_fn_gen!(#schema, #new_model, #model);
 
 
-        pub mod web {
+        mod web {
             use crate::controller::{PageParam, PageRes};
             use super::*;
             use crate::api_doc::extractors::Json;

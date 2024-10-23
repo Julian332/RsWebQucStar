@@ -84,7 +84,7 @@ pub fn web_routes(conn_pool: Pool<ConnectionManager<PgConnection>>) -> ApiRouter
         .merge(router_delete.route_layer(permission_required!(AuthBackend, "common_delete")))
         .with_state(conn_pool)
 }
-pub mod web {
+mod web {
     use super::*;
     use crate::api_doc::errors::AppError;
     use crate::api_doc::extractors::Json;
