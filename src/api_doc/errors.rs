@@ -25,6 +25,7 @@ pub struct AppError {
 impl_from!(diesel::result::Error);
 impl_from!(r2d2::Error);
 impl_from!(alloy::hex::FromHexError, "address format error");
+impl_from!(alloy::primitives::SignatureError);
 
 impl Display for AppError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

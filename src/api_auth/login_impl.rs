@@ -90,7 +90,7 @@ impl AuthnBackend for AuthBackend {
         match users
             .filter(username.eq(creds.username))
             .select(User::as_select())
-            .first(&mut self.db.get().expect("cannot get db"))
+            .first(&mut self.db.get()?)
         {
             Ok(user) => verify_password(creds.password, &user.password)
                 .map_err(|e| AppError {
@@ -109,18 +109,16 @@ impl AuthnBackend for AuthBackend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        let signature = Signature::from_str(&creds.signature).expect("wrong signature");
-        let recovered_addr = signature
-            .recover_address_from_msg(LOGIN_MESSAGE)
-            .expect("wrong signature recover");
-        let user_addr = Address::from_hex(creds.user_addr.as_str()).expect("wrong address");
+        let signature = Signature::from_str(&creds.signature)?;
+        let recovered_addr = signature.recover_address_from_msg(LOGIN_MESSAGE)?;
+        let user_addr = Address::from_hex(creds.user_addr.as_str())?;
 
         assert_eq!(recovered_addr, user_addr, "not equal ");
 
         match users
             .filter(username.eq(user_addr.to_string()))
             .select(User::as_select())
-            .first(&mut self.db.get().expect("cannot get db"))
+            .first(&mut self.db.get()?)
             .optional()
         {
             Ok(Some(user)) => Ok(Some(user)),
@@ -137,8 +135,7 @@ impl AuthnBackend for AuthBackend {
                         is_delete: false,
                     })
                     .returning(User::as_select())
-                    .get_result(&mut self.db.get().expect("cannot get db"))
-                    .expect("insert user failed");
+                    .get_result(&mut self.db.get()?)?;
                 Ok(Some(user))
             }
             Err(e) => Err(e.into()),
@@ -149,7 +146,7 @@ impl AuthnBackend for AuthBackend {
         match users
             .find(user_id)
             .select(User::as_select())
-            .first(&mut self.db.get().expect("cannot get db"))
+            .first(&mut self.db.get()?)
         {
             Ok(user) => Ok(Some(user)),
             Err(e) => Err(e.into()),
@@ -182,7 +179,7 @@ impl AuthzBackend for AuthBackend {
         &self,
         user: &Self::User,
     ) -> Result<HashSet<Self::Permission>, Self::Error> {
-        let conn = &mut self.db.get().expect("cannot get db");
+        let conn = &mut self.db.get()?;
         match users
             .inner_join(groups::table())
             .inner_join(groups_permissions.on(group_id.eq(crate::schema::groups::id)))
