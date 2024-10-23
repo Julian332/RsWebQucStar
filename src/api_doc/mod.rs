@@ -79,4 +79,17 @@ macro_rules! impl_from {
             }
         }
     };
+    ($error:path,$message:literal) => {
+        #[allow(unused)]
+        impl From<$error> for AppError {
+            fn from(value: $error) -> Self {
+                AppError {
+                    error: format!("error:::::::: {}", $message),
+                    error_id: Default::default(),
+                    status: Default::default(),
+                    error_details: None,
+                }
+            }
+        }
+    };
 }
